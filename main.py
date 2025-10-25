@@ -3,49 +3,69 @@ from config.settings import PAGE_CONFIG
 from ui import (
     overview_tab,
     components_tab,
-    roi_tab,
     regression_tab,
     input_tab,
     admin_tab,
     style
 )
-from utils.auth_manager import login_or_register, logout
+from ui.login_tab import render_login
+from ui.register_tab import render_register
+from utils.auth_manager import logout
 
 # =========================================================
 # PAGE CONFIGURATION
 # =========================================================
 st.set_page_config(**PAGE_CONFIG)
-# style.apply_dark_theme()
+style.apply_dark_theme()  # 🌙 Kích hoạt theme tối
 
 # =========================================================
-# LOGIN / REGISTER
+# SESSION STATE INIT
 # =========================================================
-login_or_register()
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+if "page" not in st.session_state:
+    st.session_state.page = "login"
 
-if "user" not in st.session_state:
+# =========================================================
+# LOGIN / REGISTER GIAO DIỆN
+# =========================================================
+if not st.session_state.authenticated:
+    if st.session_state.page == "login":
+        render_login()
+    elif st.session_state.page == "register":
+        render_register()
     st.stop()
 
+# =========================================================
+# NẾU ĐÃ ĐĂNG NHẬP → HIỂN THỊ DASHBOARD
+# =========================================================
+user = st.session_state["user"]
 role = st.session_state["role"]
 
-# =========================================================
-# SIDEBAR MENU
-# =========================================================
-st.sidebar.title("📘 Digital GDP Dashboard")
+# ---- SIDEBAR ----
+st.sidebar.title("📘 Vietnam Digital GDP Dashboard")
+st.sidebar.markdown("---")
+st.sidebar.markdown(f"👤 **User:** {user}")
+st.sidebar.markdown(f"🎭 **Role:** {role.capitalize()}")
+st.sidebar.markdown("---")
 
+# ---- MENU ----
 if role == "admin":
     menu = st.sidebar.radio(
         "Select Section:",
         [
             "📈 GDP & DTI Overview",
             "🧩 Digital Transformation Pillars",
-            "💰 ROI of Digital Investment",
-            "📊 Regression Analysis",
-            "📋 Admin Data View"
-        ]
+            "📋 Admin Data View",
+        ],
     )
 else:
-    menu = st.sidebar.radio("Select Section:", ["📝 Input Provincial Indicators"])
+    menu = st.sidebar.radio(
+        "Select Section:",
+        ["📝 Input Provincial Indicators"]
+    )
 
+# ---- LOGOUT ----
 logout()
 
 # =========================================================
@@ -63,3 +83,12 @@ elif menu == "📋 Admin Data View":
     admin_tab.render()
 elif menu == "📝 Input Provincial Indicators":
     input_tab.render()
+
+# =========================================================
+# FOOTER
+# =========================================================
+st.markdown("<hr style='border: 1px solid #1e293b;'>", unsafe_allow_html=True)
+st.markdown(
+    "<p style='text-align:center; color:#94a3b8;'>© 2025 Vietnam Digital Transformation & GDP Dashboard</p>",
+    unsafe_allow_html=True,
+)

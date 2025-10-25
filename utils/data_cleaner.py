@@ -1,33 +1,46 @@
 import pandas as pd
 
-def clean_data(df: pd.DataFrame) -> pd.DataFrame:
+def clean_data(df: pd.DataFrame, gdp_col: str = "GDP_growth") -> pd.DataFrame:
     """
-    Clean the input DataFrame used for DTI–GDP analysis.
+    Clean the input DataFrame used for DTI–GDP or digital transformation analysis.
 
     Steps performed:
     ----------------
     1. Drop missing values (NaN) across all columns.
-    2. Remove invalid records where GDP growth ≤ 0.
-    3. Return a cleaned DataFrame ready for modeling and visualization.
+    2. Remove invalid records where GDP growth ≤ 0 (if the column exists).
+    3. Remove duplicate rows (if any).
+    4. Reset the DataFrame index.
+    5. Return a cleaned DataFrame ready for modeling and visualization.
 
     Parameters
     ----------
     df : pd.DataFrame
-        Raw dataset containing at least the column 'GDP_growth'.
+        Raw dataset containing at least the column `GDP_growth` or `GDP`.
+    gdp_col : str, optional
+        The column name used for GDP growth filtering (default: "GDP_growth").
 
     Returns
     -------
     pd.DataFrame
-        Cleaned dataset with valid GDP growth values only.
+        Cleaned dataset with valid records only.
     """
-    df = df.copy()  # avoid mutating original DataFrame
+    df = df.copy()  # Avoid mutating original DataFrame
 
-    # Ensure required column exists
-    if "GDP_growth" not in df.columns:
-        raise KeyError("The DataFrame must contain a 'GDP_growth' column.")
+    # --- Drop missing values ---
+    df.dropna(inplace=True)
 
-    # Drop missing values and filter positive GDP growth
-    df = df.dropna()
-    df = df[df["GDP_growth"] > 0]
+    # --- Remove duplicates ---
+    df.drop_duplicates(inplace=True)
+
+    # --- Filter invalid GDP values ---
+    if gdp_col in df.columns:
+        df = df[df[gdp_col] > 0]
+    elif "GDP" in df.columns:
+        df = df[df["GDP"] > 0]
+    else:
+        raise KeyError(f"The DataFrame must contain '{gdp_col}' or 'GDP' column.")
+
+    # --- Reset index after cleaning ---
+    df.reset_index(drop=True, inplace=True)
 
     return df

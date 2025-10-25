@@ -1,9 +1,10 @@
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
+from config.settings import DATA_PATHS
 
 
-def forecast_gdp(data_path: str = "data/vietnam_dti_gdp.csv", end_year: int = 2030):
+def forecast_gdp(data_path: str = DATA_PATHS["DTI"], end_year: int = 2030):
     """
     Forecast Vietnam's GDP growth based on the Digital Transformation Index (DTI)
     using a simple linear regression model.
@@ -11,7 +12,8 @@ def forecast_gdp(data_path: str = "data/vietnam_dti_gdp.csv", end_year: int = 20
     Parameters
     ----------
     data_path : str, optional
-        Path to the CSV file containing historical DTI and GDP growth data.
+        Path to the CSV file containing historical DTI and GDP data.
+        Default: config.settings.DATA_PATHS["DTI"].
     end_year : int, optional
         Target forecast horizon (default: 2030).
 
@@ -19,7 +21,7 @@ def forecast_gdp(data_path: str = "data/vietnam_dti_gdp.csv", end_year: int = 20
     -------
     tuple
         df : DataFrame
-            Original dataset containing DTI and GDP growth.
+            Original dataset containing Year, DTI, and GDP.
         forecast_df : DataFrame
             DataFrame with predicted GDP growth values for future DTI levels.
         coef : float
@@ -29,24 +31,40 @@ def forecast_gdp(data_path: str = "data/vietnam_dti_gdp.csv", end_year: int = 20
     """
 
     # --- Load dataset ---
-    df = pd.read_csv(data_path)
+    df_dti = pd.read_csv(DATA_PATHS["DTI"])
+    df_gdp = pd.read_csv(DATA_PATHS["GDP"])
 
-    # --- Define X and y ---
+    # Kiểm tra và gộp dữ liệu theo Year
+    if "Year" in df_dti.columns and "Year" in df_gdp.columns:
+        df = pd.merge(df_dti, df_gdp, on="Year")
+    else:
+        raise ValueError("Cả hai file DTI.csv và GDP.csv cần có cột 'Year'.")
+
+    # Đặt lại tên cột nếu cần
+    if "Value" in df.columns:
+        df.rename(columns={"Value_x": "DTI", "Value_y": "GDP"}, inplace=True)
+
+    # --- Chuẩn bị dữ liệu ---
     X = df[["DTI"]].values
-    y = df["GDP_growth"].values
+    y = df["GDP"].values
 
-    # --- Fit Linear Regression Model ---
+    # --- Huấn luyện mô hình Linear Regression ---
     model = LinearRegression().fit(X, y)
 
-    # --- Create future DTI range for forecast ---
-    last_dti = df["DTI"].iloc[-1]
-    future_dti = np.arange(last_dti, last_dti + 1.5, 0.1)
+    # --- Tạo khoảng giá trị DTI tương lai ---
+    last_year = int(df["Year"].max())
+    future_years = np.arange(last_year + 1, end_year + 1)
+    last_dti = float(df["DTI"].iloc[-1])
+
+    # Giả định DTI tăng đều 0.2 điểm/năm (hoặc tùy chỉnh)
+    future_dti = np.arange(last_dti, last_dti + 0.2 * len(future_years), 0.2)
     future_gdp = model.predict(future_dti.reshape(-1, 1))
 
-    # --- Build Forecast DataFrame ---
+    # --- Dự báo GDP ---
     forecast_df = pd.DataFrame({
-        "DTI": future_dti,
-        "Predicted_GDP_Growth": future_gdp
+        "Year": future_years,
+        "Predicted_DTI": future_dti[:len(future_years)],
+        "Predicted_GDP": future_gdp[:len(future_years)]
     })
 
     return df, forecast_df, model.coef_[0], model.intercept_
