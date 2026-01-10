@@ -3,11 +3,17 @@ import statsmodels.api as sm
 from config.settings import DATA_PATHS
 
 
-def run_regression():
+def run_regression(model_type="dti"):
     """
     Run an Ordinary Least Squares (OLS) regression to estimate
-    the impact of Digital Transformation indicators
-    (CQS, KTS, XHS, DTI) on Vietnam's GDP.
+    the impact of Digital Transformation indicators on Vietnam's GDP.
+
+    Parameters
+    ----------
+    model_type : str
+        - "dti": Use only DTI (composite index) - avoids multicollinearity
+        - "components": Use CQS, KTS, XHS (individual pillars)
+        - "all": Use all indicators (WARNING: causes multicollinearity)
 
     Returns
     -------
@@ -25,29 +31,43 @@ def run_regression():
     dti = pd.read_csv(DATA_PATHS["DTI"])
 
     # =========================================================
-    # 2️⃣ Merge datasets on "Year"
+    # 2️⃣ Aggregate by Year (average across provinces)
     # =========================================================
-    df = gdp.merge(cqs, on="Year", suffixes=("", "_CQS")) \
-            .merge(kts, on="Year", suffixes=("", "_KTS")) \
-            .merge(xhs, on="Year", suffixes=("", "_XHS")) \
-            .merge(dti, on="Year", suffixes=("", "_DTI"))
-
-    # Rename standardized columns (nếu cột là Value)
-    df.columns = ["Year", "GDP", "CQS", "KTS", "XHS", "DTI"]
+    gdp = gdp.groupby("Year", as_index=False)["GDP"].sum()
+    cqs = cqs.groupby("Year", as_index=False)["CQS"].mean()
+    kts = kts.groupby("Year", as_index=False)["KTS"].mean()
+    xhs = xhs.groupby("Year", as_index=False)["XHS"].mean()
+    dti = dti.groupby("Year", as_index=False)["DTI"].mean()
 
     # =========================================================
-    # 3️⃣ Define variables
+    # 3️⃣ Merge datasets on "Year"
     # =========================================================
-    y = df["GDP"]                            # Biến phụ thuộc
-    X = df[["CQS", "KTS", "XHS", "DTI"]]     # Biến độc lập
-    X = sm.add_constant(X)                   # Thêm hằng số β₀
+    df = gdp.merge(cqs, on="Year") \
+           .merge(kts, on="Year") \
+           .merge(xhs, on="Year") \
+           .merge(dti, on="Year")
 
     # =========================================================
-    # 4️⃣ Fit OLS Regression model
+    # 4️⃣ Define variables based on model_type
+    # =========================================================
+    y = df["GDP"]  # Dependent variable
+
+    if model_type == "dti":
+        # Use only DTI (composite index) - recommended to avoid multicollinearity
+        X = df[["DTI"]]
+    elif model_type == "components":
+        # Use individual pillars (CQS, KTS, XHS)
+        X = df[["CQS", "KTS", "XHS"]]
+    else:
+        # Use all (WARNING: multicollinearity issue)
+        X = df[["CQS", "KTS", "XHS", "DTI"]]
+
+    X = sm.add_constant(X)  # Add intercept β₀
+
+    # =========================================================
+    # 5️⃣ Fit OLS Regression model
     # =========================================================
     model = sm.OLS(y, X).fit()
 
-    # =========================================================
-    # 5️⃣ Return model & summary
-    # =========================================================
     return model
+

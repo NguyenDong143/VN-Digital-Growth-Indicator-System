@@ -25,12 +25,24 @@ THEME = {
 # DATA CONFIGURATION
 # =========================================================
 DATA_PATHS = {
-    "GDP": "data/GDP.csv",
-    "CQS": "data/CQS.csv",
-    "KTS": "data/KTS.csv",
-    "XHS": "data/XHS.csv",
-    "DTI": "data/DTI.csv",
-    "USERS": "data/users.csv",   # Nếu có user management
+    "GDP": "data/csv/GDP.csv",
+    "CQS": "data/csv/CQS.csv",
+    "KTS": "data/csv/KTS.csv",
+    "XHS": "data/csv/XHS.csv",
+    "DTI": "data/csv/DTI.csv",
+    "USERS_DB": "data/db/users.db",
+    "PROVINCE_DATA": "data/csv/province_data.csv",
+}
+
+# =========================================================
+# ASSETS CONFIGURATION
+# =========================================================
+ASSETS_PATHS = {
+    "LOGIN_BG": "assets/images/login.png",
+    "REGISTER_BG": "assets/images/register.png",
+    "LOGIN_BADGE": "assets/images/login_badge.png",
+    "REGISTER_BADGE": "assets/images/register_badge.png",
+    "GALAXY_BG": "assets/images/galaxy_bg.png",
 }
 
 # =========================================================

@@ -1,125 +1,195 @@
- # 🌐 **Digital GDP Dashboard**
+# 🌐 Digital GDP Dashboard
 
 **Vietnam Digital Transformation & GDP Growth Analysis**
-**Digital GDP Dashboard** là một ứng dụng **Streamlit** giúp trực quan hóa và phân tích **mối quan hệ giữa chuyển đổi số (Digital Transformation)** và **tăng trưởng GDP** tại Việt Nam.
-Hệ thống tích hợp **phân quyền người dùng (Admin / Province)**, **đăng nhập – đăng ký**, và **phân tích hồi quy – dự báo GDP** dựa trên dữ liệu thực tế.
+
+Dashboard phân tích mối quan hệ giữa **Chuyển đổi số** và **Tăng trưởng GDP** của 63 tỉnh/thành phố Việt Nam.
+
+![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.28+-red?logo=streamlit)
+![License](https://img.shields.io/badge/License-MIT-green)
+
 ---
 
-## 🧱 **Cấu trúc dự án**
+## 📸 Screenshots
 
-```bash
+### 🔐 Login Page
+- Giao diện đăng nhập hiện đại với galaxy theme
+- Hỗ trợ đăng ký tài khoản mới
+
+### 📊 GDP & DTI Overview
+- Biểu đồ GDP theo năm
+- 4 Key Metrics: CQS, KTS, XHS, DTI → GDP
+- 4 biểu đồ trụ cột chuyển đổi số
+
+### 🧩 Digital Transformation Pillars
+- 4 Pillar Cards với hiệu ứng hover
+- Biểu đồ xu hướng theo năm
+- Radar chart so sánh các năm
+- Phân tích & nhận định
+
+---
+
+## ✨ Tính năng
+
+| Tính năng | Mô tả |
+|-----------|-------|
+| 📊 **GDP Analysis** | Biểu đồ tương tác với Plotly |
+| 🧩 **3 Trụ cột** | CQS (Chính quyền số), KTS (Kinh tế số), XHS (Xã hội số) |
+| � **DTI Index** | Chỉ số chuyển đổi số tổng hợp |
+| 📈 **Regression** | Phân tích OLS: DTI → GDP |
+| 👥 **Phân quyền** | Admin (xem tất cả) / Province (nhập liệu) |
+| 🔐 **Bảo mật** | bcrypt hash + SQLite database |
+| 🎨 **Dark Theme** | Giao diện tối hiện đại với hiệu ứng |
+
+---
+
+## � Cấu trúc dự án
+
+```
 DIGITAL_GDP_DASHBOARD/
-│
-├── main.py                        # File chính (chạy ứng dụng Streamlit)
+├── main.py                 # Entry point
+├── requirements.txt        # Dependencies
+├── Dockerfile              # Docker config
+├── README.md
 │
 ├── config/
-│   └── settings.py                # Cấu hình trang, theme, đường dẫn dữ liệu
+│   └── settings.py         # Cấu hình ứng dụng
 │
-├── data/                          # Dữ liệu và hình ảnh
-│   ├── CQS.csv                    # Chỉ số Chính quyền số
-│   ├── DTI.csv                    # Digital Transformation Index
-│   ├── GDP.csv                    # GDP theo năm
-│   ├── KTS.csv                    # Kinh tế số
-│   ├── XHS.csv                    # Xã hội số
-│   ├── users.csv                  # Danh sách tài khoản người dùng
-│   ├── login.png                  # Giao diện đăng nhập
-│   └── register.png               # Giao diện đăng ký
+├── data/
+│   ├── csv/                # Dữ liệu CSV
+│   │   ├── GDP.csv
+│   │   ├── CQS.csv
+│   │   ├── KTS.csv
+│   │   ├── XHS.csv
+│   │   └── DTI.csv
+│   └── db/                 # SQLite database
+│       └── users.db
+│
+├── assets/
+│   └── images/             # Hình ảnh
 │
 ├── models/
-│   ├── regression_model.py        # Hồi quy: GDP_growth ~ DTI
-│   └── forecast_model.py          # Dự báo GDP dựa trên DTI
+│   ├── regression_model.py # Mô hình hồi quy OLS
+│   └── forecast_model.py   # Dự báo
 │
 ├── ui/
-│   ├── overview_tab.py            # Tab Tổng quan GDP & DTI
-│   ├── components_tab.py          # Tab 3 trụ cột chuyển đổi số
-│   ├── regression_tab.py          # Tab hồi quy & kiểm định mô hình
-│   ├── register_tab.py            # Giao diện đăng ký tài khoản
-│   ├── login_tab.py               # Giao diện đăng nhập
-│   ├── input_tab.py               # Nhập dữ liệu DTI cho user tỉnh
-│   ├── admin_tab.py               # Quản lý tài khoản (admin)
-│   └── style.py                   # Tùy chỉnh giao diện dark theme
+│   ├── style.py            # Dark theme
+│   ├── login_tab.py        # Đăng nhập
+│   ├── register_tab.py     # Đăng ký
+│   ├── overview_tab.py     # Tổng quan GDP
+│   ├── components_tab.py   # 3 trụ cột
+│   ├── admin_tab.py        # Admin view
+│   └── input_tab.py        # Province input
 │
 ├── utils/
-│   ├── auth_manager.py            # Xử lý đăng nhập, đăng ký, phân quyền
-│   ├── data_loader.py             # Hàm load dữ liệu CSV
-│   └── data_cleaner.py            # Hàm xử lý, làm sạch dữ liệu
+│   ├── auth_manager.py     # Xác thực
+│   ├── database.py         # SQLite
+│   ├── data_loader.py      # Load dữ liệu
+│   └── data_cleaner.py     # Xử lý dữ liệu
 │
-├── requirements.txt               # Danh sách thư viện cần cài
-└── README.md                      # Tài liệu hướng dẫn
+└── tests/                  # Unit tests
 ```
 
 ---
 
-## 🚀 **Cách chạy ứng dụng**
-### 1️⃣ Cài đặt thư viện
-Mở terminal và chạy:
+## 🚀 Cài đặt & Chạy
+
+### Yêu cầu
+- Python 3.11+
+
+### Cách 1: UV
 
 ```bash
-pip install -r requirements.txt
-```
-### 2️⃣ Chạy ứng dụng Streamlit
-```bash
+# Cài UV
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# Clone & Setup
+git clone https://github.com/your-username/DIGITAL_GDP_DASHBOARD.git
+cd DIGITAL_GDP_DASHBOARD
+
+uv venv
+uv pip install -r requirements.txt
+.venv\Scripts\activate
 streamlit run main.py
 ```
-Hoặc:
+
+### Cách 2: venv
 ```bash
-python -m streamlit run main.py
+git clone https://github.com/your-username/DIGITAL_GDP_DASHBOARD.git
+cd DIGITAL_GDP_DASHBOARD
+
+python -m venv venv
+.\venv\Scripts\activate
+pip install -r requirements.txt
+streamlit run main.py
 ```
 
-Ứng dụng sẽ tự động mở tại địa chỉ:
-👉 **[http://localhost:8501](http://localhost:8501)**
----
+### Cách 3: Docker
 
-## 🔐 **Phân quyền người dùng**
-
-| Vai trò               | Chức năng chính                                       |
-| --------------------- | ----------------------------------------------------- |
-| 🏙️ **Province User** | Nhập dữ liệu DTI, xem phân tích GDP & các trụ cột số  |
-| 👨‍💼 **Admin**       | Quản lý người dùng, phê duyệt và xem tổng hợp dữ liệu |
----
-
-## 📊 **Các tính năng chính**
-✅ **Phân tích & Trực quan hóa**
-Hiển thị biểu đồ GDP, DTI và 3 trụ cột CQS – KTS – XHS theo năm.
-✅ **Hồi quy & Dự báo GDP**
-Mô hình hồi quy tuyến tính giúp đánh giá tác động của DTI tới GDP và dự báo tăng trưởng trong tương lai.
-✅ **Phân quyền người dùng**
-Tách biệt quyền truy cập và dữ liệu giữa user "province" và "admin".
-✅ **Dark Mode Giao diện**
-Giao diện được tối ưu với theme tối và biểu tượng rõ ràng.
----
-
-## 🧮 **Công nghệ sử dụng**
-
-| Loại            | Công nghệ                              |
-| --------------- | -------------------------------------- |
-| Frontend        | Streamlit                              |
-| Backend         | Python                                 |
-| Visualization   | Plotly, Matplotlib                     |
-| Data Processing | Pandas, Statsmodels                    |
-| Authentication  | bcrypt, Session State                  |
-| Database        | CSV hoặc PostgreSQL (tùy chọn mở rộng) |
----
-
-## 📁 **Dữ liệu mẫu**
-
-* **DTI.csv**: Chỉ số chuyển đổi số của Việt Nam (theo năm)
-* **GDP.csv**: Tốc độ tăng trưởng GDP
-* **users.csv**: Thông tin tài khoản (username, password hash, role)
----
-## 🧠 **Ví dụ mô hình hồi quy**
-
-Phương trình được ước lượng:
-```math
-GDP_t = β₀ + β₁ * DTI_t + ε_t
+```bash
+docker build -t gdp-dashboard .
+docker run -p 8501:8501 gdp-dashboard
 ```
-Ứng dụng hiển thị:
-* Hệ số β₁ → mức độ ảnh hưởng của DTI đến GDP
-* R², p-value, và hệ số chặn (intercept)
+
 ---
 
-## 🛠️ **Hướng phát triển**
-* ✅ Kết nối PostgreSQL thay vì CSV
-* ✅ Tự động cập nhật dữ liệu DTI theo tỉnh
-* 🔜 Tích hợp AI để dự báo xu hướng chuyển đổi số
-* 🔜 Giao diện quản trị chuyên sâu với biểu đồ thời gian thực
+## 🌐 Truy cập
+
+```
+http://localhost:8501
+```
+
+### Tài khoản mặc định
+| Username | Password | Role |
+|----------|----------|------|
+| admin | admin123 | Admin |
+| user | user123 | Province |
+
+---
+
+## 👥 Vai trò người dùng
+
+### 👨‍💼 Admin
+- Xem GDP & DTI Overview
+- Xem Digital Transformation Pillars
+- Quản lý dữ liệu (Admin Data View)
+
+### 🏙️ Province User
+- Nhập liệu chỉ số tỉnh/thành phố
+
+---
+
+## 🛠️ Công nghệ
+
+| Stack | Công nghệ |
+|-------|-----------|
+| Frontend | Streamlit |
+| Charts | Plotly |
+| Data | Pandas, NumPy |
+| ML | Statsmodels, Scikit-learn |
+| Auth | bcrypt |
+| Database | SQLite |
+| Container | Docker |
+
+---
+
+## 📊 Nguồn dữ liệu
+
+- **GDP**: Tổng cục Thống kê Việt Nam
+- **DTI, CQS, KTS, XHS**: Bộ Thông tin và Truyền thông
+
+---
+
+## 📝 License
+
+MIT License - © 2025 Vietnam Digital GDP Dashboard
+
+---
+
+## � Đóng góp
+
+1. Fork repository
+2. Tạo feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push branch (`git push origin feature/AmazingFeature`)
+5. Mở Pull Request

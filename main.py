@@ -49,21 +49,62 @@ st.sidebar.markdown(f"👤 **User:** {user}")
 st.sidebar.markdown(f"🎭 **Role:** {role.capitalize()}")
 st.sidebar.markdown("---")
 
-# ---- MENU ----
+# ---- INIT MENU STATE ----
+if "current_menu" not in st.session_state:
+    if role == "admin":
+        st.session_state.current_menu = "📈 GDP & DTI Overview"
+    else:
+        st.session_state.current_menu = "📝 Input Provincial Indicators"
+
+# ---- SIDEBAR BUTTON STYLE ----
+st.sidebar.markdown("""
+<style>
+.sidebar-btn {
+    display: block;
+    width: 100%;
+    padding: 12px 15px;
+    margin: 8px 0;
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: 10px;
+    color: #e2e8f0;
+    font-size: 0.95rem;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.sidebar-btn:hover {
+    background: linear-gradient(145deg, rgba(56, 189, 248, 0.2), rgba(30, 41, 59, 0.9));
+    border-color: rgba(56, 189, 248, 0.5);
+    transform: translateX(5px);
+}
+.sidebar-btn.active {
+    background: linear-gradient(145deg, rgba(56, 189, 248, 0.3), rgba(30, 41, 59, 0.95));
+    border-color: #38bdf8;
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ---- MENU BUTTONS ----
+st.sidebar.markdown("**📂 Menu:**")
+
 if role == "admin":
-    menu = st.sidebar.radio(
-        "Select Section:",
-        [
-            "📈 GDP & DTI Overview",
-            "🧩 Digital Transformation Pillars",
-            "📋 Admin Data View",
-        ],
-    )
+    if st.sidebar.button("📈 GDP & DTI Overview", key="btn_overview", use_container_width=True):
+        st.session_state.current_menu = "📈 GDP & DTI Overview"
+        st.rerun()
+    if st.sidebar.button("🧩 Digital Transformation Pillars", key="btn_pillars", use_container_width=True):
+        st.session_state.current_menu = "🧩 Digital Transformation Pillars"
+        st.rerun()
+    if st.sidebar.button("📋 Admin Data View", key="btn_admin", use_container_width=True):
+        st.session_state.current_menu = "📋 Admin Data View"
+        st.rerun()
 else:
-    menu = st.sidebar.radio(
-        "Select Section:",
-        ["📝 Input Provincial Indicators"]
-    )
+    if st.sidebar.button("📝 Input Provincial Indicators", key="btn_input", use_container_width=True):
+        st.session_state.current_menu = "📝 Input Provincial Indicators"
+        st.rerun()
+
+st.sidebar.markdown("---")
 
 # ---- LOGOUT ----
 logout()
@@ -71,12 +112,12 @@ logout()
 # =========================================================
 # PAGE ROUTING
 # =========================================================
+menu = st.session_state.current_menu
+
 if menu == "📈 GDP & DTI Overview":
     overview_tab.render()
 elif menu == "🧩 Digital Transformation Pillars":
     components_tab.render()
-elif menu == "💰 ROI of Digital Investment":
-    roi_tab.render()
 elif menu == "📊 Regression Analysis":
     regression_tab.render()
 elif menu == "📋 Admin Data View":
@@ -92,3 +133,4 @@ st.markdown(
     "<p style='text-align:center; color:#94a3b8;'>© 2025 Vietnam Digital Transformation & GDP Dashboard</p>",
     unsafe_allow_html=True,
 )
+

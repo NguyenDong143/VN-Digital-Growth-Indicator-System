@@ -1,48 +1,36 @@
 import streamlit as st
-import pandas as pd
 import bcrypt
-from pathlib import Path
+from utils.database import init_db, get_user, add_user, get_all_users
 
-USER_FILE = Path("data/users.csv")
+# Initialize database on module load
+init_db()
+
 
 # =========================================================
 # Utility Functions
 # =========================================================
 def load_users():
-    """Đọc danh sách người dùng, tạo file nếu chưa tồn tại"""
-    if not USER_FILE.exists():
-        df = pd.DataFrame(columns=["username", "password", "role"])
-        df.to_csv(USER_FILE, index=False)
-    return pd.read_csv(USER_FILE)
+    """Get list of all users from database."""
+    return get_all_users()
 
 
 def save_user(username: str, password: str, role: str = "province") -> bool:
     """
-    Lưu tài khoản mới vào file CSV (mật khẩu được mã hóa).
-    Trả về False nếu username đã tồn tại.
+    Save a new user to the database (password is hashed).
+    Returns False if username already exists.
     """
-    df = load_users()
-    if username in df["username"].values:
-        return False  # Username đã tồn tại
-
-    # Mã hóa mật khẩu
+    # Hash password
     hashed_pw = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-
-    new_user = pd.DataFrame([[username, hashed_pw, role]],
-                            columns=["username", "password", "role"])
-    df = pd.concat([df, new_user], ignore_index=True)
-    df.to_csv(USER_FILE, index=False)
-    return True
+    return add_user(username, hashed_pw, role)
 
 
 def verify_user(username: str, password: str):
-    """Xác thực username và mật khẩu"""
-    df = load_users()
-    user = df[df["username"] == username]
-    if not user.empty:
-        stored_pw = user.iloc[0]["password"].encode("utf-8")
+    """Verify username and password, return role if valid."""
+    user = get_user(username)
+    if user:
+        stored_pw = user["password"].encode("utf-8")
         if bcrypt.checkpw(password.encode("utf-8"), stored_pw):
-            return user.iloc[0]["role"]
+            return user["role"]
     return None
 
 

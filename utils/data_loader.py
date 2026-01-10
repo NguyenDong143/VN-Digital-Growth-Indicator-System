@@ -54,9 +54,4 @@ def load_data(file_path: str) -> pd.DataFrame:
         except Exception:
             pass
 
-    # Optional: Show preview in Streamlit (only if called within UI context)
-    if st._is_running_with_streamlit:
-        st.markdown(f"✅ Loaded data from **{file_path.name}** ({len(df)} rows, {len(df.columns)} columns)")
-        st.dataframe(df.head(), use_container_width=True)
-
     return df
