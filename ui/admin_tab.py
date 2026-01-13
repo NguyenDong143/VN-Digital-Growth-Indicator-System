@@ -238,7 +238,7 @@ def render():
             
             st.dataframe(
                 filtered_df,
-                use_container_width=True,
+                width="stretch",
                 height=400
             )
             
@@ -283,7 +283,7 @@ def render():
                     )
                 )
                 
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width="stretch")
             
             # Download Button
             st.markdown("<br>", unsafe_allow_html=True)
@@ -295,7 +295,7 @@ def render():
                     data=csv_data,
                     file_name=f"province_data_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
                     mime="text/csv",
-                    use_container_width=True
+                    width="stretch"
                 )
     
     # ============================================================
@@ -332,7 +332,7 @@ def render():
                 if "password" in user_df.columns:
                     user_df = user_df.drop(columns=["password"])
                 
-                st.dataframe(user_df, use_container_width=True)
+                st.dataframe(user_df, width="stretch")
                 
             else:
                 st.info("Chưa có user nào trong hệ thống.")

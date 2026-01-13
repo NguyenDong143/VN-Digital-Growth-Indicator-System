@@ -166,7 +166,7 @@ def render():
             yaxis=dict(showgrid=True, gridcolor="rgba(56, 189, 248, 0.1)", tickformat=".2s")
         )
         
-        st.plotly_chart(fig_gdp, use_container_width=True)
+        st.plotly_chart(fig_gdp, width="stretch")
 
     with col_right:
         st.markdown("""
@@ -255,16 +255,16 @@ def render():
 
     with col_a:
         st.markdown('<span class="pillar-header pillar-cqs">🏛️ CQS (Chính quyền số)</span>', unsafe_allow_html=True)
-        st.plotly_chart(create_pillar_chart(cqs_df, "Year", "CQS", "#60a5fa"), use_container_width=True)
+        st.plotly_chart(create_pillar_chart(cqs_df, "Year", "CQS", "#60a5fa"), width="stretch")
 
     with col_b:
         st.markdown('<span class="pillar-header pillar-dti">💡 DTI (Chuyển đổi số tổng hợp)</span>', unsafe_allow_html=True)
-        st.plotly_chart(create_pillar_chart(dti_df, "Year", "DTI", "#a78bfa"), use_container_width=True)
+        st.plotly_chart(create_pillar_chart(dti_df, "Year", "DTI", "#a78bfa"), width="stretch")
 
     with col_c:
         st.markdown('<span class="pillar-header pillar-kts">💼 KTS (Kinh tế số)</span>', unsafe_allow_html=True)
-        st.plotly_chart(create_pillar_chart(kts_df, "Year", "KTS", "#34d399"), use_container_width=True)
+        st.plotly_chart(create_pillar_chart(kts_df, "Year", "KTS", "#34d399"), width="stretch")
 
     with col_d:
         st.markdown('<span class="pillar-header pillar-xhs">🌍 XHS (Xã hội số)</span>', unsafe_allow_html=True)
-        st.plotly_chart(create_pillar_chart(xhs_df, "Year", "XHS", "#fbbf24"), use_container_width=True)
+        st.plotly_chart(create_pillar_chart(xhs_df, "Year", "XHS", "#fbbf24"), width="stretch")

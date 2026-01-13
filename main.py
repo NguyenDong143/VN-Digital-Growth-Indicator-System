@@ -25,6 +25,10 @@ if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 if "page" not in st.session_state:
     st.session_state.page = "login"
+if "user" not in st.session_state:
+    st.session_state.user = None
+if "role" not in st.session_state:
+    st.session_state.role = None
 
 # =========================================================
 # LOGIN / REGISTER GIAO DIỆN
@@ -90,17 +94,17 @@ st.sidebar.markdown("""
 st.sidebar.markdown("**📂 Menu:**")
 
 if role == "admin":
-    if st.sidebar.button("📈 GDP & DTI Overview", key="btn_overview", use_container_width=True):
+    if st.sidebar.button("📈 GDP & DTI Overview", key="btn_overview", width="stretch"):
         st.session_state.current_menu = "📈 GDP & DTI Overview"
         st.rerun()
-    if st.sidebar.button("🧩 Digital Transformation Pillars", key="btn_pillars", use_container_width=True):
+    if st.sidebar.button("🧩 Digital Transformation Pillars", key="btn_pillars", width="stretch"):
         st.session_state.current_menu = "🧩 Digital Transformation Pillars"
         st.rerun()
-    if st.sidebar.button("📋 Admin Data View", key="btn_admin", use_container_width=True):
+    if st.sidebar.button("📋 Admin Data View", key="btn_admin", width="stretch"):
         st.session_state.current_menu = "📋 Admin Data View"
         st.rerun()
 else:
-    if st.sidebar.button("📝 Input Provincial Indicators", key="btn_input", use_container_width=True):
+    if st.sidebar.button("📝 Input Provincial Indicators", key="btn_input", width="stretch"):
         st.session_state.current_menu = "📝 Input Provincial Indicators"
         st.rerun()
 

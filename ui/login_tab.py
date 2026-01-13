@@ -158,7 +158,7 @@ def render_login():
     # LEFT: Image
     with col_img:
         try:
-            st.image("assets/images/login_badge.png", use_column_width=True)
+            st.image("assets/images/login_badge.png", width="stretch")
         except:
             st.markdown("""
             <div style="text-align: center; padding: 60px 20px;">

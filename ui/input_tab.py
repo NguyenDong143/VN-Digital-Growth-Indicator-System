@@ -320,7 +320,7 @@ def render():
     
     col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
     with col_btn2:
-        if st.button("💾 Lưu dữ liệu", use_container_width=True, type="primary"):
+        if st.button("💾 Lưu dữ liệu", width="stretch", type="primary"):
             validation_errors = validate_inputs()
             
             if validation_errors:
@@ -367,4 +367,4 @@ def render():
 
                 # Preview
                 st.markdown("#### 📋 Dữ liệu đã lưu")
-                st.dataframe(df[df["Province"] == province].tail(5), use_container_width=True)
+                st.dataframe(df[df["Province"] == province].tail(5), width="stretch")

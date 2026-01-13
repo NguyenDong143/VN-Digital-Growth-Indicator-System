@@ -265,7 +265,7 @@ def render():
         hovermode="x unified"
     )
     
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     # ============================================================
     # RADAR CHART & REGRESSION RESULTS
@@ -327,7 +327,7 @@ def render():
             margin=dict(l=60, r=60, t=40, b=60)
         )
         
-        st.plotly_chart(fig_radar, use_container_width=True)
+        st.plotly_chart(fig_radar, width="stretch")
     
     with col_right:
         # Hiển thị thống kê tóm tắt với hiệu ứng
