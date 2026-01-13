@@ -47,7 +47,7 @@ user = st.session_state["user"]
 role = st.session_state["role"]
 
 # ---- SIDEBAR ----
-st.sidebar.title("📘 Vietnam Digital GDP Dashboard")
+st.sidebar.title("📘 Vietnam Digital Transformation & GDP Dashboard")
 st.sidebar.markdown("---")
 st.sidebar.markdown(f"👤 **User:** {user}")
 st.sidebar.markdown(f"🎭 **Role:** {role.capitalize()}")

@@ -198,7 +198,7 @@ def render_register():
                         st.session_state.page = "login"
                         st.rerun()
         
-        st.markdown('<div class="divider"><span>đã có tài khoản?</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="divider"><span>Đã có tài khoản?</span></div>', unsafe_allow_html=True)
         
         if st.button("⬅️ Đăng nhập", key="back_login"):
             st.session_state.page = "login"

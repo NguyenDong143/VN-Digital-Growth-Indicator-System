@@ -147,8 +147,8 @@ def render_login():
     # Main Title
     st.markdown("""
     <div class="main-title">
-        <h1>🚀 Digital GDP Dashboard</h1>
-        <p>Hệ thống quản lý và phân tích GDP số</p>
+        <h1>🚀 Digital Transformation - GDP</h1>
+        <p>Hệ thống phân tích tác động của Chuyển đổi số tới tăng trưởng GDP Việt Nam</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -172,12 +172,12 @@ def render_login():
         st.markdown("""
         <div class="form-header">
             <div class="icon">👋</div>
-            <h2>Chào mừng trở lại!</h2>
-            <p>Đăng nhập để tiếp tục sử dụng hệ thống</p>
+            <h2>Xin chào!</h2>
+            <p>Hãy Đăng nhập hoặc Đăng ký (nếu chưa có tài khoản) để sử dụng hệ thống</p>
         </div>
         """, unsafe_allow_html=True)
         
-        username = st.text_input("👤 Tên đăng nhập", placeholder="Nhập tên đăng nhập của bạn", key="login_user")
+        username = st.text_input("👤 Tên đăng nhập", placeholder="Nhập tên đăng nhập", key="login_user")
         password = st.text_input("🔑 Mật khẩu", type="password", placeholder="Nhập mật khẩu", key="login_pass")
         
         st.markdown("<br>", unsafe_allow_html=True)
@@ -201,6 +201,6 @@ def render_login():
         
         st.markdown('<div class="divider"><span>hoặc</span></div>', unsafe_allow_html=True)
         
-        if st.button("✨ Tạo tài khoản mới", key="register_btn"):
+        if st.button("✨ Đăng ký", key="register_btn"):
             st.session_state.page = "register"
             st.rerun()
