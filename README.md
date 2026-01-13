@@ -100,10 +100,10 @@ DIGITAL_GDP_DASHBOARD/
 ### Cách 1: UV
 
 ```bash
-# Cài UV
-powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+# Cài UV bằng PowerShell as an administrator
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 
-# Clone & Setup
+# Clone & Setup bằng CMD tại thư mục đặt muốn đặt Sourcecode
 git clone https://github.com/your-username/DIGITAL_GDP_DASHBOARD.git
 cd DIGITAL_GDP_DASHBOARD
 
