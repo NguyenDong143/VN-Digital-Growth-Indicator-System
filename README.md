@@ -10,18 +10,18 @@ Dashboard phân tích mối quan hệ giữa **Chuyển đổi số** và **Tăn
 
 ---
 
-## 📸 Screenshots
+## Screenshots
 
-### 🔐 Login Page
+### Login Page
 - Giao diện đăng nhập hiện đại với galaxy theme
 - Hỗ trợ đăng ký tài khoản mới
 
-### 📊 GDP & DTI Overview
+### GDP & DTI Overview
 - Biểu đồ GDP theo năm
 - 4 Key Metrics: CQS, KTS, XHS, DTI → GDP
 - 4 biểu đồ trụ cột chuyển đổi số
 
-### 🧩 Digital Transformation Pillars
+### Digital Transformation Pillars
 - 4 Pillar Cards với hiệu ứng hover
 - Biểu đồ xu hướng theo năm
 - Radar chart so sánh các năm
@@ -29,17 +29,17 @@ Dashboard phân tích mối quan hệ giữa **Chuyển đổi số** và **Tăn
 
 ---
 
-## ✨ Tính năng
+## Tính năng
 
 | Tính năng | Mô tả |
 |-----------|-------|
-| 📊 **GDP Analysis** | Biểu đồ tương tác với Plotly |
-| 🧩 **3 Trụ cột** | CQS (Chính quyền số), KTS (Kinh tế số), XHS (Xã hội số) |
-| � **DTI Index** | Chỉ số chuyển đổi số tổng hợp |
-| 📈 **Regression** | Phân tích OLS: DTI → GDP |
-| 👥 **Phân quyền** | Admin (xem tất cả) / Province (nhập liệu) |
-| 🔐 **Bảo mật** | bcrypt hash + SQLite database |
-| 🎨 **Dark Theme** | Giao diện tối hiện đại với hiệu ứng |
+| **GDP Analysis** | Biểu đồ tương tác với Plotly |
+| **3 Trụ cột** | CQS (Chính quyền số), KTS (Kinh tế số), XHS (Xã hội số) |
+| **DTI Index** | Chỉ số chuyển đổi số tổng hợp |
+| **Regression** | Phân tích OLS: DTI → GDP |
+| **Phân quyền** | Admin (xem tất cả) / Province (nhập liệu) |
+| **Bảo mật** | bcrypt hash + SQLite database |
+| **Dark Theme** | Giao diện tối hiện đại với hiệu ứng |
 
 ---
 
@@ -92,7 +92,7 @@ DIGITAL_GDP_DASHBOARD/
 
 ---
 
-## 🚀 Cài đặt & Chạy
+## Cài đặt & Chạy
 
 ### Yêu cầu
 - Python 3.11+
@@ -149,47 +149,13 @@ http://localhost:8501
 
 ## 👥 Vai trò người dùng
 
-### 👨‍💼 Admin
+### Admin
 - Xem GDP & DTI Overview
 - Xem Digital Transformation Pillars
 - Quản lý dữ liệu (Admin Data View)
 
-### 🏙️ Province User
+### User
 - Nhập liệu chỉ số tỉnh/thành phố
 
 ---
 
-## 🛠️ Công nghệ
-
-| Stack | Công nghệ |
-|-------|-----------|
-| Frontend | Streamlit |
-| Charts | Plotly |
-| Data | Pandas, NumPy |
-| ML | Statsmodels, Scikit-learn |
-| Auth | bcrypt |
-| Database | SQLite |
-| Container | Docker |
-
----
-
-## 📊 Nguồn dữ liệu
-
-- **GDP**: Tổng cục Thống kê Việt Nam
-- **DTI, CQS, KTS, XHS**: Bộ Thông tin và Truyền thông
-
----
-
-## 📝 License
-
-MIT License - © 2025 Vietnam Digital GDP Dashboard
-
----
-
-## � Đóng góp
-
-1. Fork repository
-2. Tạo feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add AmazingFeature'`)
-4. Push branch (`git push origin feature/AmazingFeature`)
-5. Mở Pull Request
