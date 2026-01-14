@@ -72,18 +72,11 @@ user = st.session_state["user"]
 role = st.session_state["role"]
 
 # ---- SIDEBAR ----
-# Logo icons at top left
-logo_col1, logo_col2 = st.sidebar.columns([1, 1])
-with logo_col1:
-    st.image("assets/images/logo 1.png")
-with logo_col2:
-    st.image("assets/images/logo 2.png")
-
-st.sidebar.markdown("<h3 style='margin-bottom: 5px;'>📘 Vietnam Digital Transformation & GDP Dashboard</h3>", unsafe_allow_html=True)
-st.sidebar.markdown("<hr style='margin: 5px 0;'>", unsafe_allow_html=True)
-st.sidebar.markdown(f"<p style='margin: 3px 0;'>👤 User: {user}</p>", unsafe_allow_html=True)
-st.sidebar.markdown(f"<p style='margin: 3px 0;'>🎭 Role: {role.capitalize()}</p>", unsafe_allow_html=True)
-st.sidebar.markdown("<hr style='margin: 5px 0;'>", unsafe_allow_html=True)
+st.sidebar.title("📘 Vietnam Digital GDP Dashboard")
+st.sidebar.markdown("---")
+st.sidebar.markdown(f"👤 **User:** {user}")
+st.sidebar.markdown(f"🎭 **Role:** {role.capitalize()}")
+st.sidebar.markdown("---")
 
 # ---- INIT MENU STATE ----
 if "current_menu" not in st.session_state:
