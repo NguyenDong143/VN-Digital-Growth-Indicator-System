@@ -1,8 +1,8 @@
-# 🌐 Digital GDP Dashboard
+# 🌐 Digital Transformation - GDP Dashboard
 
 **Vietnam Digital Transformation & GDP Growth Analysis**
 
-Dashboard phân tích mối quan hệ giữa **Chuyển đổi số** và **Tăng trưởng GDP** của 63 tỉnh/thành phố Việt Nam.
+Dashboard phân tích tác động của **Chuyển đổi số** tới **Tăng trưởng GDP** tại các tỉnh thành phố và toàn quốc.
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.28+-red?logo=streamlit)
@@ -100,10 +100,10 @@ DIGITAL_GDP_DASHBOARD/
 ### Cách 1: UV
 
 ```bash
-# Cài UV
-powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+# Cài UV bằng PowerShell as an administrator
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 
-# Clone & Setup
+# Clone & Setup bằng CMD tại thư mục đặt muốn Sourcecode
 git clone https://github.com/your-username/DIGITAL_GDP_DASHBOARD.git
 cd DIGITAL_GDP_DASHBOARD
 

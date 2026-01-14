@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings('ignore')
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -236,11 +239,39 @@ def render():
             else:
                 filtered_df = df
             
-            st.dataframe(
+            # Editable table for admin
+            st.info("📝 Bạn có thể chỉnh sửa trực tiếp trên bảng dữ liệu bên dưới")
+            
+            edited_df = st.data_editor(
                 filtered_df,
-                width="stretch",
-                height=400
+                use_container_width=True,
+                height=400,
+                num_rows="dynamic",  # Allow adding/deleting rows
+                key="province_data_editor"
             )
+            
+            # Save changes button
+            col_save, col_reset = st.columns(2)
+            with col_save:
+                if st.button("💾 Lưu thay đổi", type="primary", use_container_width=True, key="btn_save_data"):
+                    try:
+                        # Update the full dataframe with edited values
+                        if "Province" in df.columns:
+                            # Remove old filtered rows and add edited ones
+                            df_updated = df[~df["Province"].isin(selected)]
+                            df_updated = pd.concat([df_updated, edited_df], ignore_index=True)
+                        else:
+                            df_updated = edited_df
+                        
+                        df_updated.to_csv(data_path, index=False)
+                        st.success("✅ Đã lưu thay đổi thành công!")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"❌ Lỗi khi lưu: {e}")
+            
+            with col_reset:
+                if st.button("🔄 Hủy thay đổi", use_container_width=True, key="btn_reset_data"):
+                    st.rerun()
             
             # Chart Section
             if "DTI" in df.columns and "GDP_Growth" in df.columns and not filtered_df.empty:
@@ -302,12 +333,20 @@ def render():
     # TAB 2: USER MANAGEMENT
     # ============================================================
     with tab2:
+        
+        # --------------------------------------------------------
+        # SECTION 2: USER LIST WITH EDIT/DELETE
+        # --------------------------------------------------------
         st.markdown("""
         <div class="section-header">
             <span style="font-size: 1.3rem;">👥</span>
             <h3>Danh sách người dùng</h3>
         </div>
         """, unsafe_allow_html=True)
+        
+        # Initialize session state for editing
+        if "editing_user_id" not in st.session_state:
+            st.session_state.editing_user_id = None
         
         try:
             users = get_all_users()
@@ -327,12 +366,157 @@ def render():
                 
                 st.markdown("<br>", unsafe_allow_html=True)
                 
-                # User table
-                user_df = pd.DataFrame(users)
-                if "password" in user_df.columns:
-                    user_df = user_df.drop(columns=["password"])
+                # Edit form (appears when editing a user)
+                if st.session_state.editing_user_id is not None:
+                    editing_user = next((u for u in users if u.get("id") == st.session_state.editing_user_id), None)
+                    if editing_user:
+                        st.markdown("""
+                        <div class="section-header" style="background: linear-gradient(90deg, rgba(96, 165, 250, 0.2) 0%, transparent 100%); border-left-color: #60a5fa;">
+                            <span style="font-size: 1.3rem;">✏️</span>
+                            <h3>Sửa thông tin: {}</h3>
+                        </div>
+                        """.format(editing_user.get("username", "")), unsafe_allow_html=True)
+                        
+                        with st.container():
+                            col_e1, col_e2 = st.columns(2)
+                            with col_e1:
+                                edit_role = st.selectbox(
+                                    "🎭 Vai trò",
+                                    ["province", "admin"],
+                                    index=0 if editing_user.get("role") == "province" else 1,
+                                    format_func=lambda x: "🏙️ Province" if x == "province" else "👨‍💼 Admin",
+                                    key="edit_role"
+                                )
+                            with col_e2:
+                                edit_password = st.text_input(
+                                    "🔑 Mật khẩu mới (để trống nếu không đổi)",
+                                    type="password",
+                                    placeholder="Nhập mật khẩu mới",
+                                    key="edit_password"
+                                )
+                            
+                            col_save, col_cancel = st.columns(2)
+                            with col_save:
+                                if st.button("💾 Lưu thay đổi", type="primary", use_container_width=True, key="btn_save_edit"):
+                                    success = False
+                                    # Update role
+                                    if update_user_role(editing_user.get("username"), edit_role):
+                                        success = True
+                                    # Update password if provided
+                                    if edit_password and len(edit_password) >= 4:
+                                        import bcrypt
+                                        hashed_pw = bcrypt.hashpw(edit_password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+                                        if update_user_password(editing_user.get("username"), hashed_pw):
+                                            success = True
+                                    
+                                    if success:
+                                        st.success("✅ Đã cập nhật thành công!")
+                                        st.session_state.editing_user_id = None
+                                        st.rerun()
+                                    else:
+                                        st.error("❌ Cập nhật thất bại!")
+                            
+                            with col_cancel:
+                                if st.button("❌ Hủy", use_container_width=True, key="btn_cancel_edit"):
+                                    st.session_state.editing_user_id = None
+                                    st.rerun()
+                        
+                        st.markdown("<hr style='border-color: rgba(148, 163, 184, 0.2);'>", unsafe_allow_html=True)
                 
-                st.dataframe(user_df, width="stretch")
+                # Add User Button - at top of table
+                if "show_add_user_form" not in st.session_state:
+                    st.session_state.show_add_user_form = False
+                
+                add_col1, add_col2 = st.columns([1, 3])
+                with add_col1:
+                    if st.button("➕ Thêm người dùng", type="primary", use_container_width=True, key="btn_show_add"):
+                        st.session_state.show_add_user_form = not st.session_state.show_add_user_form
+                        st.session_state.editing_user_id = None
+                
+                # Add User Form (appears when button clicked)
+                if st.session_state.show_add_user_form:
+                    st.markdown("""
+                    <div class="section-header" style="background: linear-gradient(90deg, rgba(34, 197, 94, 0.2) 0%, transparent 100%); border-left-color: #22c55e;">
+                        <span style="font-size: 1.3rem;">➕</span>
+                        <h3>Thêm người dùng mới</h3>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    col_a1, col_a2 = st.columns(2)
+                    with col_a1:
+                        add_username = st.text_input("👤 Username", placeholder="Nhập username", key="add_new_username")
+                        add_password = st.text_input("🔑 Mật khẩu", type="password", placeholder="Nhập mật khẩu", key="add_new_password")
+                    with col_a2:
+                        add_role = st.selectbox(
+                            "🎭 Vai trò",
+                            ["province", "admin"],
+                            format_func=lambda x: "🏙️ Province" if x == "province" else "👨‍💼 Admin",
+                            key="add_new_role"
+                        )
+                        add_confirm = st.text_input("🔐 Xác nhận mật khẩu", type="password", placeholder="Nhập lại mật khẩu", key="add_new_confirm")
+                    
+                    col_add_btn, col_cancel_btn = st.columns(2)
+                    with col_add_btn:
+                        if st.button("✅ Thêm user", type="primary", use_container_width=True, key="btn_confirm_add"):
+                            if not add_username or not add_password or not add_confirm:
+                                st.error("⚠️ Vui lòng nhập đầy đủ thông tin!")
+                            elif add_password != add_confirm:
+                                st.error("❌ Mật khẩu không khớp!")
+                            elif len(add_password) < 4:
+                                st.error("⚠️ Mật khẩu phải có ít nhất 4 ký tự!")
+                            else:
+                                if save_user(add_username, add_password, add_role):
+                                    st.success(f"✅ Đã tạo user '{add_username}' thành công!")
+                                    st.session_state.show_add_user_form = False
+                                    st.rerun()
+                                else:
+                                    st.error("⚠️ Username đã tồn tại!")
+                    with col_cancel_btn:
+                        if st.button("❌ Hủy", use_container_width=True, key="btn_cancel_add"):
+                            st.session_state.show_add_user_form = False
+                            st.rerun()
+                    
+                    st.markdown("<hr style='border-color: rgba(148, 163, 184, 0.2);'>", unsafe_allow_html=True)
+                
+                # Table Header
+                header_cols = st.columns([0.5, 1.5, 1.2, 1.5])
+                headers = ["ID", "Username", "Role", "Thao tác"]
+                for col, header in zip(header_cols, headers):
+                    col.markdown(f"**{header}**")
+                
+                st.markdown("<hr style='margin: 5px 0; border-color: rgba(148, 163, 184, 0.2);'>", unsafe_allow_html=True)
+                
+                # Table Rows with inline buttons
+                current_login_user = st.session_state.get("user", "")
+                
+                for user in users:
+                    cols = st.columns([0.5, 1.5, 1.2, 1.5])
+                    
+                    with cols[0]:
+                        st.write(user.get("id", ""))
+                    with cols[1]:
+                        st.write(user.get("username", ""))
+                    with cols[2]:
+                        role = user.get("role", "province")
+                        if role == "admin":
+                            st.markdown("👨‍💼 Admin")
+                        else:
+                            st.markdown("🏙️ Province")
+                    with cols[3]:
+                        btn_col1, btn_col2 = st.columns(2)
+                        with btn_col1:
+                            if st.button("✏️ Sửa", key=f"edit_{user.get('id')}", type="primary", use_container_width=True):
+                                st.session_state.editing_user_id = user.get("id")
+                                st.rerun()
+                        with btn_col2:
+                            is_self = (user.get("username") == current_login_user)
+                            if st.button("🗑️ Xóa", key=f"delete_{user.get('id')}", type="secondary", use_container_width=True, disabled=is_self):
+                                if not is_self:
+                                    if delete_user(user.get("username")):
+                                        st.success(f"✅ Đã xóa user '{user.get('username')}'!")
+                                        st.rerun()
+                                    else:
+                                        st.error("❌ Xóa thất bại!")
                 
             else:
                 st.info("Chưa có user nào trong hệ thống.")

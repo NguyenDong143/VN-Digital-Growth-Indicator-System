@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings('ignore')
+
 import pandas as pd
 
 def clean_data(df: pd.DataFrame, gdp_col: str = "GDP_growth") -> pd.DataFrame:

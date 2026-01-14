@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings('ignore')
+
 import pandas as pd
 import statsmodels.api as sm
 from config.settings import DATA_PATHS

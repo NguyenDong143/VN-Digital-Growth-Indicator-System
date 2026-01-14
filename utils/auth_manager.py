@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings('ignore')
+
 import streamlit as st
 import bcrypt
 from utils.database import init_db, get_user, add_user, get_all_users

@@ -188,7 +188,7 @@ def apply_dark_theme():
         /* =========================================
            FOOTER / HEADER CLEANUP
         ========================================= */
-        footer, #MainMenu, header {
+        footer, #MainMenu {
             visibility: hidden;
         }
         </style>

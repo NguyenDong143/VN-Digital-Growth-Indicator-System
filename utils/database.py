@@ -3,6 +3,9 @@ SQLite database module for user authentication.
 Replaces CSV-based storage for better security and concurrent access.
 """
 
+import warnings
+warnings.filterwarnings('ignore')
+
 import sqlite3
 from pathlib import Path
 from contextlib import contextmanager
@@ -104,6 +107,18 @@ def update_user_role(username: str, new_role: str) -> bool:
         cursor.execute(
             "UPDATE users SET role = ? WHERE username = ?",
             (new_role, username)
+        )
+        conn.commit()
+        return cursor.rowcount > 0
+
+
+def update_user_password(username: str, new_password_hash: str) -> bool:
+    """Update user's password (expects hashed password)."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE users SET password = ? WHERE username = ?",
+            (new_password_hash, username)
         )
         conn.commit()
         return cursor.rowcount > 0
