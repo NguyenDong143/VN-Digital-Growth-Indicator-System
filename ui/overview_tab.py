@@ -10,10 +10,6 @@ def render():
     """
     Trang tổng quan (Overview) - Premium Dark Theme
     """
-
-    # ============================================================
-    # CUSTOM CSS
-    # ============================================================
     st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -99,9 +95,6 @@ def render():
     </style>
     """, unsafe_allow_html=True)
 
-    # ============================================================
-    # PAGE HEADER
-    # ============================================================
     st.markdown("""
     <div class="overview-header">
         <h1>📊 Tổng quan Tác động Chuyển đổi số tới Tăng trưởng GDP</h1>
@@ -109,9 +102,6 @@ def render():
     </div>
     """, unsafe_allow_html=True)
 
-    # ============================================================
-    # LOAD DATA
-    # ============================================================
     gdp_df = pd.read_csv("data/csv/GDP.csv")
     cqs_df = pd.read_csv("data/csv/CQS.csv")
     dti_df = pd.read_csv("data/csv/DTI.csv")
@@ -127,9 +117,6 @@ def render():
     kts_df = kts_df.groupby("Year", as_index=False)["KTS"].mean()
     xhs_df = xhs_df.groupby("Year", as_index=False)["XHS"].mean()
 
-    # ============================================================
-    # LAYOUT: GDP Chart (left) + Key Metrics (right)
-    # ============================================================
     col_left, col_right = st.columns([2, 1])
 
     with col_left:
@@ -208,14 +195,8 @@ def render():
         except Exception as e:
             st.error(f"Không thể tính metrics: {e}")
 
-    # ============================================================
-    # DIVIDER
-    # ============================================================
     st.markdown('<div class="custom-divider"></div>', unsafe_allow_html=True)
 
-    # ============================================================
-    # 4 PILLARS
-    # ============================================================
     st.markdown("""
     <div class="section-header">
         <span style="font-size: 1.3rem;">🧩</span>

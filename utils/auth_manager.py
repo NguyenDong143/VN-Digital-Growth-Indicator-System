@@ -5,13 +5,9 @@ import streamlit as st
 import bcrypt
 from utils.database import init_db, get_user, add_user, get_all_users
 
-# Initialize database on module load
 init_db()
 
 
-# =========================================================
-# Utility Functions
-# =========================================================
 def load_users():
     """Get list of all users from database."""
     return get_all_users()
@@ -36,10 +32,6 @@ def verify_user(username: str, password: str):
             return user["role"]
     return None
 
-
-# =========================================================
-# LOGIN / REGISTER HANDLERS
-# =========================================================
 def login_user(username: str, password: str):
     """Xử lý đăng nhập"""
     if not username or not password:
@@ -73,10 +65,6 @@ def register_user(username: str, password: str, confirm_pw: str, role: str = "pr
     else:
         st.error("⚠️ Tên đăng nhập đã tồn tại.")
 
-
-# =========================================================
-# Logout Function
-# =========================================================
 def logout():
     """Đăng xuất và làm sạch session"""
     if st.sidebar.button("🚪 Đăng xuất"):

@@ -331,7 +331,7 @@ def render_login():
     # LEFT: Image
     with col_img:
         try:
-            st.image("assets/images/login_badge.png", use_container_width=True)
+            st.image("assets/images/login_badge.png", width="stretch")
         except:
             st.markdown("""
             <div style="text-align: center; padding: 20px;">
@@ -373,7 +373,7 @@ def render_login():
         
         st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
         
-        if st.button("✨ Đăng nhập", type="primary", key="login_btn", use_container_width=True):
+        if st.button("✨ Đăng nhập", type="primary", key="login_btn", width="stretch"):
             if not username or not password:
                 st.error("⚠️ Vui lòng nhập đầy đủ thông tin!")
             else:

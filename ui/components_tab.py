@@ -15,10 +15,6 @@ def render():
     Digital Transformation Pillars - Premium Dark Theme UI
     Hiển thị 3 trụ cột chuyển đổi số: CQS, KTS, XHS và tổng hợp DTI
     """
-
-    # ============================================================
-    # CUSTOM CSS cho Premium Dark Theme
-    # ============================================================
     st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -132,9 +128,6 @@ def render():
     </style>
     """, unsafe_allow_html=True)
 
-    # ============================================================
-    # PAGE HEADER
-    # ============================================================
     st.markdown("""
     <div class="pillars-header">
         <h1>🧩 Ba Trụ Cột Chuyển Đổi Số</h1>
@@ -142,9 +135,6 @@ def render():
     </div>
     """, unsafe_allow_html=True)
 
-    # ============================================================
-    # LOAD DATA
-    # ============================================================
     gdp = pd.read_csv(DATA_PATHS["GDP"])
     cqs = pd.read_csv(DATA_PATHS["CQS"])
     kts = pd.read_csv(DATA_PATHS["KTS"])
@@ -160,7 +150,7 @@ def render():
 
     df = gdp.merge(cqs, on="Year").merge(kts, on="Year").merge(xhs, on="Year").merge(dti, on="Year")
 
-    # Calculate year-over-year changes
+
     latest_year = df["Year"].max()
     prev_year = latest_year - 1
     
@@ -170,9 +160,6 @@ def render():
     def calc_change(current, previous):
         return ((current - previous) / previous * 100) if previous != 0 else 0
 
-    # ============================================================
-    # PILLAR CARDS - 4 columns
-    # ============================================================
     col1, col2, col3, col4 = st.columns(4)
     
     pillars_data = [
@@ -199,17 +186,9 @@ def render():
             </div>
             """, unsafe_allow_html=True)
 
-    # ============================================================
-    # DIVIDER
-    # ============================================================
     st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
-
-    # ============================================================
-    # TREND CHARTS - Combined Line Chart
-    # ============================================================
     st.markdown("### 📈 Xu hướng phát triển qua các năm")
     
-    # Create combined line chart
     fig = go.Figure()
     
     fig.add_trace(go.Scatter(
@@ -270,9 +249,7 @@ def render():
     
     st.plotly_chart(fig, width="stretch")
 
-    # ============================================================
-    # RADAR CHART & REGRESSION RESULTS
-    # ============================================================
+
     st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
     
     col_left, col_right = st.columns([1, 1])
@@ -280,10 +257,9 @@ def render():
     with col_left:
         st.markdown("### 🎯 So sánh các trụ cột qua các năm")
         
-        # Radar chart with all years
         categories = ["CQS", "KTS", "XHS"]
         
-        # Get values for each year
+
         years_colors = [
             (2021, "#64748b", "rgba(100, 116, 139, 0.1)"),
             (2022, "#fbbf24", "rgba(251, 191, 36, 0.15)"),
@@ -333,7 +309,6 @@ def render():
         st.plotly_chart(fig_radar, width="stretch")
     
     with col_right:
-        # Hiển thị thống kê tóm tắt với hiệu ứng
         st.markdown("### 📊 Tổng kết năm " + str(int(latest_year)))
         
         st.markdown(f"""
@@ -361,9 +336,6 @@ def render():
         </div>
         """, unsafe_allow_html=True)
 
-    # ============================================================
-    # INSIGHTS
-    # ============================================================
     st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
     st.markdown("### 💡 Phân tích & Nhận định")
     

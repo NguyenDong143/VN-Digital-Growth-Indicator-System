@@ -6,7 +6,6 @@ import pandas as pd
 from datetime import date
 from pathlib import Path
 
-# Đường dẫn dữ liệu
 DATA_PATH = Path("data/csv/province_data.csv")
 
 
@@ -15,10 +14,6 @@ def render():
     Provincial Data Input - Premium Dark Theme UI
     Cho phép user tỉnh nhập dữ liệu chuyển đổi số hàng năm
     """
-
-    # ============================================================
-    # CUSTOM CSS
-    # ============================================================
     st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -159,16 +154,12 @@ def render():
     </div>
     """, unsafe_allow_html=True)
 
-    # ============================================================
-    # ACCESS CONTROL
-    # ============================================================
     if st.session_state.get("role") != "province":
         st.error("🚫 Chỉ user tỉnh mới có thể truy cập trang này.")
         return
 
     province = st.session_state["user"].capitalize()
-    
-    # Province Badge
+
     st.markdown(f"""
     <div style="text-align: center;">
         <div class="province-badge">
@@ -177,9 +168,6 @@ def render():
     </div>
     """, unsafe_allow_html=True)
 
-    # ============================================================
-    # YEAR SELECTOR
-    # ============================================================
     current_year = date.today().year
     
     col_year1, col_year2, col_year3 = st.columns([1, 2, 1])
@@ -196,9 +184,6 @@ def render():
             label_visibility="collapsed"
         )
 
-    # ============================================================
-    # MAIN INDICATORS SECTION
-    # ============================================================
     st.markdown("""
     <div class="input-section">
         <div class="section-title">
@@ -239,9 +224,7 @@ def render():
             help="Digital Transformation Index tổng hợp"
         )
 
-    # ============================================================
-    # THREE PILLARS SECTION
-    # ============================================================
+
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("""
     <div class="input-section">
@@ -284,9 +267,7 @@ def render():
         </div>
         """, unsafe_allow_html=True)
 
-    # ============================================================
-    # SUPPORTING FACTORS
-    # ============================================================
+
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("""
     <div class="input-section">
@@ -308,9 +289,7 @@ def render():
     with col_s3:
         innovation = st.slider("💡 Đổi mới sáng tạo", 0, 100, 50, help="Mức độ đổi mới công nghệ")
 
-    # ============================================================
-    # VALIDATION & SAVE
-    # ============================================================
+
     def validate_inputs():
         errors = []
         if not -20 <= gdp_growth <= 30:
@@ -347,7 +326,6 @@ def render():
 
                 new_df = pd.DataFrame([new_row])
 
-                # Đọc file cũ nếu có
                 if DATA_PATH.exists():
                     old_df = pd.read_csv(DATA_PATH)
                     mask = (old_df["Province"] == province) & (old_df["Year"] == selected_year)

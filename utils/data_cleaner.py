@@ -27,22 +27,12 @@ def clean_data(df: pd.DataFrame, gdp_col: str = "GDP_growth") -> pd.DataFrame:
     pd.DataFrame
         Cleaned dataset with valid records only.
     """
-    df = df.copy()  # Avoid mutating original DataFrame
-
-    # --- Drop missing values ---
+    df = df.copy()
     df.dropna(inplace=True)
-
-    # --- Remove duplicates ---
     df.drop_duplicates(inplace=True)
-
-    # --- Filter invalid GDP values (allow negative growth, only remove NaN) ---
     if gdp_col in df.columns:
         df = df[df[gdp_col].notna()]
     elif "GDP" in df.columns:
         df = df[df["GDP"].notna()]
-    # Note: GDP growth can be negative during recessions, so we don't filter by value
-
-    # --- Reset index after cleaning ---
     df.reset_index(drop=True, inplace=True)
-
     return df

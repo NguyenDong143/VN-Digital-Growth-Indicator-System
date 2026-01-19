@@ -50,7 +50,6 @@ def load_data(file_path: str) -> pd.DataFrame:
     else:
         raise Exception(f"Failed to load data from '{file_path}' with any known encoding.")
 
-    # Convert numeric columns safely
     for col in df.columns:
         try:
             df[col] = pd.to_numeric(df[col], errors="ignore")

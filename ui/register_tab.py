@@ -338,14 +338,10 @@ def render_register():
         <p>Tham gia Digital GDP Dashboard</p>
     </div>
     """, unsafe_allow_html=True)
-    
-    # 2 Column Layout - Ảnh trái bo sát, form phải rộng hơn
     col_img, col_form = st.columns([0.85, 1.15], gap="large")
-    
-    # LEFT: Image
     with col_img:
         try:
-            st.image("assets/images/register_badge.png", use_container_width=True)
+            st.image("assets/images/register_badge.png", width="stretch")
         except:
             st.markdown("""
             <div style="text-align: center; padding: 20px;">
@@ -371,8 +367,6 @@ def render_register():
                 <p style="color: #94a3b8; margin-top: 8px; font-size: 0.9rem;">Tạo tài khoản mới</p>
             </div>
             """, unsafe_allow_html=True)
-    
-    # RIGHT: Form
     with col_form:
         st.markdown("""
         <div class="form-header">
@@ -390,7 +384,7 @@ def render_register():
         
         st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
         
-        if st.button("✨ Đăng ký", type="primary", key="register_submit", use_container_width=True):
+        if st.button("✨ Đăng ký", type="primary", key="register_submit", width="stretch"):
             if not username or not password or not confirm:
                 st.error("⚠️ Vui lòng nhập đầy đủ thông tin!")
             elif password != confirm:
@@ -409,6 +403,6 @@ def render_register():
         
         st.markdown('<div class="divider"><span>Đã có tài khoản?</span></div>', unsafe_allow_html=True)
         
-        if st.button("⬅️ Quay lại đăng nhập", key="back_login", use_container_width=True):
+        if st.button("⬅️ Quay lại đăng nhập", key="back_login", width="stretch"):
             st.session_state.page = "login"
             st.rerun()

@@ -244,7 +244,7 @@ def render():
             
             edited_df = st.data_editor(
                 filtered_df,
-                use_container_width=True,
+                width="stretch",
                 height=400,
                 num_rows="dynamic",  # Allow adding/deleting rows
                 key="province_data_editor"
@@ -253,7 +253,7 @@ def render():
             # Save changes button
             col_save, col_reset = st.columns(2)
             with col_save:
-                if st.button("💾 Lưu thay đổi", type="primary", use_container_width=True, key="btn_save_data"):
+                if st.button("💾 Lưu thay đổi", type="primary", width="stretch", key="btn_save_data"):
                     try:
                         # Update the full dataframe with edited values
                         if "Province" in df.columns:
@@ -270,7 +270,7 @@ def render():
                         st.error(f"❌ Lỗi khi lưu: {e}")
             
             with col_reset:
-                if st.button("🔄 Hủy thay đổi", use_container_width=True, key="btn_reset_data"):
+                if st.button("🔄 Hủy thay đổi", width="stretch", key="btn_reset_data"):
                     st.rerun()
             
             # Chart Section
@@ -397,7 +397,7 @@ def render():
                             
                             col_save, col_cancel = st.columns(2)
                             with col_save:
-                                if st.button("💾 Lưu thay đổi", type="primary", use_container_width=True, key="btn_save_edit"):
+                                if st.button("💾 Lưu thay đổi", type="primary", width="stretch", key="btn_save_edit"):
                                     success = False
                                     # Update role
                                     if update_user_role(editing_user.get("username"), edit_role):
@@ -417,7 +417,7 @@ def render():
                                         st.error("❌ Cập nhật thất bại!")
                             
                             with col_cancel:
-                                if st.button("❌ Hủy", use_container_width=True, key="btn_cancel_edit"):
+                                if st.button("❌ Hủy", width="stretch", key="btn_cancel_edit"):
                                     st.session_state.editing_user_id = None
                                     st.rerun()
                         
@@ -429,7 +429,7 @@ def render():
                 
                 add_col1, add_col2 = st.columns([1, 3])
                 with add_col1:
-                    if st.button("➕ Thêm người dùng", type="primary", use_container_width=True, key="btn_show_add"):
+                    if st.button("➕ Thêm người dùng", type="primary", width="stretch", key="btn_show_add"):
                         st.session_state.show_add_user_form = not st.session_state.show_add_user_form
                         st.session_state.editing_user_id = None
                 
@@ -457,7 +457,7 @@ def render():
                     
                     col_add_btn, col_cancel_btn = st.columns(2)
                     with col_add_btn:
-                        if st.button("✅ Thêm user", type="primary", use_container_width=True, key="btn_confirm_add"):
+                        if st.button("✅ Thêm user", type="primary", width="stretch", key="btn_confirm_add"):
                             if not add_username or not add_password or not add_confirm:
                                 st.error("⚠️ Vui lòng nhập đầy đủ thông tin!")
                             elif add_password != add_confirm:
@@ -472,7 +472,7 @@ def render():
                                 else:
                                     st.error("⚠️ Username đã tồn tại!")
                     with col_cancel_btn:
-                        if st.button("❌ Hủy", use_container_width=True, key="btn_cancel_add"):
+                        if st.button("❌ Hủy", width="stretch", key="btn_cancel_add"):
                             st.session_state.show_add_user_form = False
                             st.rerun()
                     
@@ -505,12 +505,12 @@ def render():
                     with cols[3]:
                         btn_col1, btn_col2 = st.columns(2)
                         with btn_col1:
-                            if st.button("✏️ Sửa", key=f"edit_{user.get('id')}", type="primary", use_container_width=True):
+                            if st.button("✏️ Sửa", key=f"edit_{user.get('id')}", type="primary", width="stretch"):
                                 st.session_state.editing_user_id = user.get("id")
                                 st.rerun()
                         with btn_col2:
                             is_self = (user.get("username") == current_login_user)
-                            if st.button("🗑️ Xóa", key=f"delete_{user.get('id')}", type="secondary", use_container_width=True, disabled=is_self):
+                            if st.button("🗑️ Xóa", key=f"delete_{user.get('id')}", type="secondary", width="stretch", disabled=is_self):
                                 if not is_self:
                                     if delete_user(user.get("username")):
                                         st.success(f"✅ Đã xóa user '{user.get('username')}'!")
