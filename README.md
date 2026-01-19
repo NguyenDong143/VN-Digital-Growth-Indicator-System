@@ -144,7 +144,7 @@ http://localhost:8501
 |----------|----------|------|
 | admin | admin123 | Admin |
 | user | user123 | Province |
-
+|register|role admin|mã: 123456|
 ---
 
 ## 👥 Vai trò người dùng

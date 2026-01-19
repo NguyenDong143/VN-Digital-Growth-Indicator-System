@@ -382,6 +382,21 @@ def render_register():
         role = st.selectbox("🎭 Vai trò", ["province", "admin"],
             format_func=lambda x: "🏙️ Province" if x == "province" else "👨‍💼 Admin")
         
+        # Hiển thị trường nhập mã bảo mật khi chọn Admin
+        admin_secret_code = ""
+        if role == "admin":
+            st.markdown("""
+            <div style='background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.3); 
+                        border-radius: 8px; padding: 10px; margin: 10px 0;'>
+                <p style='color: #fbbf24; font-size: 0.85rem; margin: 0;'>
+                    ⚠️ Đăng ký tài khoản Admin yêu cầu mã bảo mật
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+            admin_secret_code = st.text_input("🔐 Mã bảo mật Admin", type="password", 
+                                               placeholder="Nhập mã bảo mật để tạo tài khoản Admin", 
+                                               key="admin_secret_code")
+        
         st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
         
         if st.button("✨ Đăng ký", type="primary", key="register_submit", width="stretch"):
@@ -391,6 +406,8 @@ def render_register():
                 st.error("❌ Mật khẩu không khớp!")
             elif len(password) < 4:
                 st.error("⚠️ Mật khẩu phải có ít nhất 4 ký tự!")
+            elif role == "admin" and admin_secret_code != "123456":
+                st.error("❌ Mã bảo mật Admin không chính xác!")
             else:
                 with st.spinner("Đang tạo tài khoản..."):
                     time.sleep(0.5)
