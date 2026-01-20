@@ -317,6 +317,26 @@ def render_login():
     </style>
     """, unsafe_allow_html=True)
 
+
+    # Partner Logos - Using HTML for better centering
+    import base64
+    from pathlib import Path
+    
+    def get_image_base64(image_path):
+        with open(image_path, "rb") as f:
+            return base64.b64encode(f.read()).decode()
+    
+    logo1_b64 = get_image_base64("assets/images/logo 1.png")
+    logo2_b64 = get_image_base64("assets/images/logo 2.png")
+    
+    st.markdown(f"""
+    <div style="display: flex; justify-content: center; align-items: center; gap: 20px; padding: 15px 0; position: relative; z-index: 1;">
+        <img src="data:image/png;base64,{logo1_b64}" style="height: 60px; width: auto; border-radius: 8px; background: white; padding: 5px;">
+        <img src="data:image/png;base64,{logo2_b64}" style="height: 60px; width: auto; border-radius: 8px; background: white; padding: 5px;">
+    </div>
+    """, unsafe_allow_html=True)
+
+    
     # Main Title
     st.markdown("""
     <div class="main-title">

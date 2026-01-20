@@ -7,7 +7,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 from config.settings import DATA_PATHS
-from utils.database import get_all_users
+from utils.database import get_all_users, delete_user, update_user_role, update_user_password, add_user
 
 
 def render():
@@ -242,12 +242,16 @@ def render():
             # Editable table for admin
             st.info("📝 Bạn có thể chỉnh sửa trực tiếp trên bảng dữ liệu bên dưới")
             
+            # Use dynamic key to allow reset
+            if "data_editor_reset_counter" not in st.session_state:
+                st.session_state.data_editor_reset_counter = 0
+            
             edited_df = st.data_editor(
                 filtered_df,
                 width="stretch",
                 height=400,
                 num_rows="dynamic",  # Allow adding/deleting rows
-                key="province_data_editor"
+                key=f"province_data_editor_{st.session_state.data_editor_reset_counter}"
             )
             
             # Save changes button
@@ -271,6 +275,8 @@ def render():
             
             with col_reset:
                 if st.button("🔄 Hủy thay đổi", width="stretch", key="btn_reset_data"):
+                    # Increment counter to generate new key and reset data_editor
+                    st.session_state.data_editor_reset_counter += 1
                     st.rerun()
             
             # Chart Section
@@ -465,7 +471,9 @@ def render():
                             elif len(add_password) < 4:
                                 st.error("⚠️ Mật khẩu phải có ít nhất 4 ký tự!")
                             else:
-                                if save_user(add_username, add_password, add_role):
+                                import bcrypt
+                                hashed_pw = bcrypt.hashpw(add_password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+                                if add_user(add_username, hashed_pw, add_role):
                                     st.success(f"✅ Đã tạo user '{add_username}' thành công!")
                                     st.session_state.show_add_user_form = False
                                     st.rerun()
