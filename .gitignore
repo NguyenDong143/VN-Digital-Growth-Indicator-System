@@ -8,6 +8,8 @@ venv/
 .venv/
 ENV/
 
+.agent/
+
 # IDE
 .vscode/
 .idea/
@@ -28,3 +30,5 @@ Thumbs.db
 dist/
 build/
 *.egg-info/
+
+

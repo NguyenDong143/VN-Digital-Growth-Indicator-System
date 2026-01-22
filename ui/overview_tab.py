@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 
 def render():
     """
-    Trang tổng quan (Overview) - Premium Dark Theme
+    Trang tổng quan (Overview) - Premium Dark Theme with Enhanced UI
     """
     st.markdown("""
     <style>
@@ -51,25 +51,106 @@ def render():
         margin: 0;
     }
     
-    div[data-testid="stMetric"] {
-        background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9)) !important;
-        border-radius: 12px !important;
-        padding: 30px 15px !important;
-        margin: 10px 5px !important;
-        text-align: center !important;
-        border: 1px solid rgba(56, 189, 248, 0.2);
-        min-height: 130px !important;
+    /* Premium Metric Cards */
+    .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        padding: 10px 0;
     }
     
-    div[data-testid="stMetric"]:hover {
-        box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
-        transform: translateY(-3px);
-        transition: all 0.3s ease;
+    .metric-card {
+        background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.9));
+        border-radius: 16px;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(148, 163, 184, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
     }
     
-    div[data-testid="stMetricLabel"] { color: #94a3b8 !important; font-size: 0.85rem !important; }
-    div[data-testid="stMetricValue"] { color: #38bdf8 !important; font-size: 1.6rem !important; font-weight: 700 !important; }
-    div[data-testid="stMetricDelta"] { font-size: 0.8rem !important; }
+    .metric-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        border-radius: 4px 0 0 4px;
+    }
+    
+    .metric-card.cqs::before { background: linear-gradient(180deg, #60a5fa, #3b82f6); }
+    .metric-card.kts::before { background: linear-gradient(180deg, #34d399, #10b981); }
+    .metric-card.xhs::before { background: linear-gradient(180deg, #fbbf24, #f59e0b); }
+    .metric-card.dti::before { background: linear-gradient(180deg, #a78bfa, #8b5cf6); }
+    
+    .metric-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        border-color: rgba(148, 163, 184, 0.2);
+    }
+    
+    .metric-card.cqs:hover { box-shadow: 0 20px 40px rgba(96, 165, 250, 0.15); }
+    .metric-card.kts:hover { box-shadow: 0 20px 40px rgba(52, 211, 153, 0.15); }
+    .metric-card.xhs:hover { box-shadow: 0 20px 40px rgba(251, 191, 36, 0.15); }
+    .metric-card.dti:hover { box-shadow: 0 20px 40px rgba(167, 139, 250, 0.15); }
+    
+    .metric-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 12px;
+        font-size: 1.2rem;
+    }
+    
+    .metric-card.cqs .metric-icon { background: rgba(96, 165, 250, 0.15); }
+    .metric-card.kts .metric-icon { background: rgba(52, 211, 153, 0.15); }
+    .metric-card.xhs .metric-icon { background: rgba(251, 191, 36, 0.15); }
+    .metric-card.dti .metric-icon { background: rgba(167, 139, 250, 0.15); }
+    
+    .metric-label {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin-bottom: 6px;
+        letter-spacing: 0.02em;
+    }
+    
+    .metric-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+        letter-spacing: -0.02em;
+    }
+    
+    .metric-card.cqs .metric-value { color: #60a5fa; }
+    .metric-card.kts .metric-value { color: #34d399; }
+    .metric-card.xhs .metric-value { color: #fbbf24; }
+    .metric-card.dti .metric-value { color: #a78bfa; }
+    
+    .metric-delta {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .metric-delta.positive {
+        background: rgba(52, 211, 153, 0.15);
+        color: #34d399;
+    }
+    
+    .metric-delta.negative {
+        background: rgba(248, 113, 113, 0.15);
+        color: #f87171;
+    }
     
     .pillar-header {
         display: inline-flex;
@@ -91,6 +172,14 @@ def render():
         height: 2px;
         background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.3), transparent);
         margin: 25px 0;
+    }
+    
+    /* Chart container styling */
+    .chart-container {
+        background: linear-gradient(145deg, rgba(15, 23, 42, 0.6), rgba(30, 41, 59, 0.4));
+        border-radius: 16px;
+        padding: 20px;
+        border: 1px solid rgba(56, 189, 248, 0.1);
     }
     </style>
     """, unsafe_allow_html=True)
@@ -122,46 +211,73 @@ def render():
     with col_left:
         st.markdown("""
         <div class="section-header">
-            <span style="font-size: 1.3rem;">💰</span>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
             <h3>GDP theo từng năm</h3>
         </div>
         """, unsafe_allow_html=True)
         
+        # Enhanced GDP Chart
         fig_gdp = go.Figure()
+        
+        # Create gradient-like effect with multiple traces
+        colors = ['#0284c7', '#0ea5e9', '#38bdf8', '#7dd3fc']
         
         fig_gdp.add_trace(go.Bar(
             x=gdp_df["Year"],
             y=gdp_df["GDP"],
             text=[f"{v/1e9:.1f}B" for v in gdp_df["GDP"]],
-            textposition="inside",
-            textfont=dict(size=11, color="white"),
+            textposition="outside",
+            textfont=dict(size=13, color="#ffffff", family="Inter", weight=600),
             marker=dict(
-                color=gdp_df["GDP"],
-                colorscale=[[0, "#0ea5e9"], [0.5, "#38bdf8"], [1, "#7dd3fc"]],
-            )
+                color=colors[:len(gdp_df)],
+                line=dict(color='rgba(56, 189, 248, 0.3)', width=1),
+                cornerradius=8
+            ),
+            hovertemplate="<b>Năm %{x}</b><br>GDP: %{y:,.0f} VND<extra></extra>"
         ))
         
         fig_gdp.update_layout(
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="white"),
-            margin=dict(l=60, r=40, t=50, b=60),
+            font=dict(color="#e2e8f0", family="Inter"),
+            margin=dict(l=60, r=40, t=60, b=60),
             height=420,
+            showlegend=False,
             xaxis=dict(
                 showgrid=False,
                 tickmode="array",
                 tickvals=gdp_df["Year"].tolist(),
-                ticktext=[str(int(y)) for y in gdp_df["Year"]]
+                ticktext=[str(int(y)) for y in gdp_df["Year"]],
+                tickfont=dict(size=14, color="#e2e8f0", weight=500),
+                title=None
             ),
-            yaxis=dict(showgrid=True, gridcolor="rgba(56, 189, 248, 0.1)", tickformat=".2s")
+            yaxis=dict(
+                showgrid=True, 
+                gridcolor="rgba(56, 189, 248, 0.08)",
+                gridwidth=1,
+                tickformat=".2s",
+                tickfont=dict(size=11, color="#64748b"),
+                title=None,
+                zeroline=False
+            ),
+            hoverlabel=dict(
+                bgcolor="rgba(15, 23, 42, 0.95)",
+                bordercolor="#38bdf8",
+                font=dict(color="#f1f5f9", size=13)
+            ),
+            bargap=0.3
         )
         
-        st.plotly_chart(fig_gdp, width="stretch")
+        st.plotly_chart(fig_gdp, width='stretch')
 
     with col_right:
         st.markdown("""
         <div class="section-header">
-            <span style="font-size: 1.3rem;">🧭</span>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
             <h3>Key Metrics – Tác động ước lượng</h3>
         </div>
         """, unsafe_allow_html=True)
@@ -180,17 +296,50 @@ def render():
             xhs_coef = params_comp.get("XHS", 0) / 1e9
             dti_scaled = dti_coef / 1e9
             
-            col1, col2 = st.columns(2)
-            with col1:
-                st.metric("🏛️ CQS → GDP", f"{cqs_coef:.2f}B", f"{cqs_coef/100:.2f}%")
-            with col2:
-                st.metric("💼 KTS → GDP", f"{kts_coef:.2f}B", f"{kts_coef/100:.2f}%")
-
-            col3, col4 = st.columns(2)
-            with col3:
-                st.metric("🌍 XHS → GDP", f"{xhs_coef:.2f}B", f"{xhs_coef/100:.2f}%")
-            with col4:
-                st.metric("💡 DTI → GDP", f"{dti_scaled:.2f}B", f"{dti_scaled/100:.2f}%")
+            # Premium Metric Cards HTML
+            def get_delta_class(value):
+                return "positive" if value >= 0 else "negative"
+            
+            def get_delta_arrow(value):
+                return "↑" if value >= 0 else "↓"
+            
+            metrics_html = f"""
+            <div class="metric-grid">
+                <div class="metric-card cqs">
+                    <div class="metric-icon">🏛️</div>
+                    <div class="metric-label">CQS → GDP</div>
+                    <div class="metric-value">{cqs_coef:.2f}B</div>
+                    <span class="metric-delta {get_delta_class(cqs_coef)}">
+                        {get_delta_arrow(cqs_coef)} {abs(cqs_coef/100):.2f}%
+                    </span>
+                </div>
+                <div class="metric-card kts">
+                    <div class="metric-icon">💼</div>
+                    <div class="metric-label">KTS → GDP</div>
+                    <div class="metric-value">{kts_coef:.2f}B</div>
+                    <span class="metric-delta {get_delta_class(kts_coef)}">
+                        {get_delta_arrow(kts_coef)} {abs(kts_coef/100):.2f}%
+                    </span>
+                </div>
+                <div class="metric-card xhs">
+                    <div class="metric-icon">🌍</div>
+                    <div class="metric-label">XHS → GDP</div>
+                    <div class="metric-value">{xhs_coef:.2f}B</div>
+                    <span class="metric-delta {get_delta_class(xhs_coef)}">
+                        {get_delta_arrow(xhs_coef)} {abs(xhs_coef/100):.2f}%
+                    </span>
+                </div>
+                <div class="metric-card dti">
+                    <div class="metric-icon">💡</div>
+                    <div class="metric-label">DTI → GDP</div>
+                    <div class="metric-value">{dti_scaled:.2f}B</div>
+                    <span class="metric-delta {get_delta_class(dti_scaled)}">
+                        {get_delta_arrow(dti_scaled)} {abs(dti_scaled/100):.2f}%
+                    </span>
+                </div>
+            </div>
+            """
+            st.markdown(metrics_html, unsafe_allow_html=True)
                 
         except Exception as e:
             st.error(f"Không thể tính metrics: {e}")
@@ -199,56 +348,202 @@ def render():
 
     st.markdown("""
     <div class="section-header">
-        <span style="font-size: 1.3rem;">🧩</span>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
         <h3>Các trụ cột Chuyển đổi số theo năm</h3>
     </div>
     """, unsafe_allow_html=True)
 
-    def create_pillar_chart(df, x_col, y_col, color):
+    def create_pillar_chart(df, x_col, y_col, primary_color, gradient_start, gradient_end, pillar_name):
+        """Create enhanced bar chart with gradient colors and growth annotation"""
         fig = go.Figure()
         
+        # Calculate growth percentage
+        first_val = df[y_col].iloc[0]
+        last_val = df[y_col].iloc[-1]
+        growth_pct = ((last_val - first_val) / first_val * 100) if first_val != 0 else 0
+        
+        # Generate gradient colors for each bar
+        n_bars = len(df)
+        bar_colors = []
+        for i in range(n_bars):
+            ratio = i / (n_bars - 1) if n_bars > 1 else 0
+            r = int(int(gradient_start[1:3], 16) * (1 - ratio) + int(gradient_end[1:3], 16) * ratio)
+            g = int(int(gradient_start[3:5], 16) * (1 - ratio) + int(gradient_end[3:5], 16) * ratio)
+            b = int(int(gradient_start[5:7], 16) * (1 - ratio) + int(gradient_end[5:7], 16) * ratio)
+            bar_colors.append(f'rgb({r}, {g}, {b})')
+        
+        # Bar chart with gradient colors
         fig.add_trace(go.Bar(
             x=df[x_col],
             y=df[y_col],
             text=[f"{v:.2f}" for v in df[y_col]],
-            textposition="inside",
-            textfont=dict(size=10, color="white"),
-            marker=dict(color=color, opacity=0.9)
+            textposition="outside",
+            textfont=dict(size=13, color="#ffffff", family="Inter", weight=600),
+            marker=dict(
+                color=bar_colors,
+                line=dict(color=primary_color, width=1),
+                cornerradius=8
+            ),
+            hovertemplate=f"<b>{pillar_name}</b><br>Năm: %{{x}}<br>Giá trị: %{{y:.3f}}<extra></extra>"
         ))
+        
+        # Add trend arrow annotation
+        arrow_color = "#34d399" if growth_pct >= 0 else "#f87171"
+        arrow_symbol = "↑" if growth_pct >= 0 else "↓"
+        
+        fig.add_annotation(
+            x=df[x_col].iloc[-1],
+            y=last_val,
+            text=f"<b>{arrow_symbol} {abs(growth_pct):.1f}%</b>",
+            showarrow=False,
+            font=dict(size=11, color=arrow_color, family="Inter"),
+            xshift=40,
+            yshift=15,
+            bgcolor="rgba(15, 23, 42, 0.9)",
+            bordercolor=arrow_color,
+            borderwidth=1,
+            borderpad=4
+        )
         
         fig.update_layout(
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="white"),
-            margin=dict(l=50, r=30, t=30, b=50),
+            font=dict(color="#e2e8f0", family="Inter"),
+            margin=dict(l=45, r=60, t=40, b=45),
             height=280,
+            showlegend=False,
             xaxis=dict(
                 showgrid=False,
                 tickmode="array",
                 tickvals=df[x_col].tolist(),
                 ticktext=[str(int(y)) for y in df[x_col]],
-                tickfont=dict(size=11)
+                tickfont=dict(size=13, color="#e2e8f0", family="Inter", weight=500)
             ),
-            yaxis=dict(showgrid=True, gridcolor="rgba(148, 163, 184, 0.1)", tickfont=dict(size=10))
+            yaxis=dict(
+                showgrid=True,
+                gridcolor="rgba(148, 163, 184, 0.08)",
+                gridwidth=1,
+                tickfont=dict(size=10, color="#64748b", family="Inter"),
+                zeroline=False,
+                range=[0, df[y_col].max() * 1.25]
+            ),
+            hoverlabel=dict(
+                bgcolor="rgba(15, 23, 42, 0.95)",
+                bordercolor=primary_color,
+                font=dict(color="#f1f5f9", size=13, family="Inter")
+            ),
+            bargap=0.3
         )
         
         return fig
+
+
+    # Enhanced pillar headers with glass card styling
+    st.markdown("""
+    <style>
+    .pillar-card {
+        background: linear-gradient(145deg, rgba(15, 23, 42, 0.6), rgba(30, 41, 59, 0.4));
+        border: 1px solid rgba(148, 163, 184, 0.1);
+        border-radius: 16px;
+        padding: 16px 16px 8px 16px;
+        margin-bottom: 16px;
+        transition: all 0.3s ease;
+    }
+    .pillar-card:hover {
+        border-color: rgba(148, 163, 184, 0.2);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+    .pillar-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+    .pillar-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+    }
+    .pillar-icon.cqs { background: rgba(96, 165, 250, 0.15); }
+    .pillar-icon.dti { background: rgba(167, 139, 250, 0.15); }
+    .pillar-icon.kts { background: rgba(52, 211, 153, 0.15); }
+    .pillar-icon.xhs { background: rgba(251, 191, 36, 0.15); }
+    .pillar-name {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #f1f5f9;
+    }
+    .pillar-name span {
+        font-weight: 400;
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
     col_a, col_b = st.columns(2)
     col_c, col_d = st.columns(2)
 
     with col_a:
-        st.markdown('<span class="pillar-header pillar-cqs">🏛️ CQS (Chính quyền số)</span>', unsafe_allow_html=True)
-        st.plotly_chart(create_pillar_chart(cqs_df, "Year", "CQS", "#60a5fa"), width="stretch")
+        st.markdown('''
+        <div class="pillar-card">
+            <div class="pillar-title">
+                <div class="pillar-icon cqs">🏛️</div>
+                <div class="pillar-name">CQS <span>• Chính quyền số</span></div>
+            </div>
+        </div>
+        ''', unsafe_allow_html=True)
+        st.plotly_chart(
+            create_pillar_chart(cqs_df, "Year", "CQS", "#60a5fa", "#2563eb", "#93c5fd", "CQS"), 
+            width='stretch'
+        )
 
     with col_b:
-        st.markdown('<span class="pillar-header pillar-dti">💡 DTI (Chuyển đổi số tổng hợp)</span>', unsafe_allow_html=True)
-        st.plotly_chart(create_pillar_chart(dti_df, "Year", "DTI", "#a78bfa"), width="stretch")
+        st.markdown('''
+        <div class="pillar-card">
+            <div class="pillar-title">
+                <div class="pillar-icon dti">💡</div>
+                <div class="pillar-name">DTI <span>• Chuyển đổi số tổng hợp</span></div>
+            </div>
+        </div>
+        ''', unsafe_allow_html=True)
+        st.plotly_chart(
+            create_pillar_chart(dti_df, "Year", "DTI", "#a78bfa", "#7c3aed", "#c4b5fd", "DTI"), 
+            width='stretch'
+        )
 
     with col_c:
-        st.markdown('<span class="pillar-header pillar-kts">💼 KTS (Kinh tế số)</span>', unsafe_allow_html=True)
-        st.plotly_chart(create_pillar_chart(kts_df, "Year", "KTS", "#34d399"), width="stretch")
+        st.markdown('''
+        <div class="pillar-card">
+            <div class="pillar-title">
+                <div class="pillar-icon kts">💼</div>
+                <div class="pillar-name">KTS <span>• Kinh tế số</span></div>
+            </div>
+        </div>
+        ''', unsafe_allow_html=True)
+        st.plotly_chart(
+            create_pillar_chart(kts_df, "Year", "KTS", "#34d399", "#059669", "#6ee7b7", "KTS"), 
+            width='stretch'
+        )
 
     with col_d:
-        st.markdown('<span class="pillar-header pillar-xhs">🌍 XHS (Xã hội số)</span>', unsafe_allow_html=True)
-        st.plotly_chart(create_pillar_chart(xhs_df, "Year", "XHS", "#fbbf24"), width="stretch")
+        st.markdown('''
+        <div class="pillar-card">
+            <div class="pillar-title">
+                <div class="pillar-icon xhs">🌍</div>
+                <div class="pillar-name">XHS <span>• Xã hội số</span></div>
+            </div>
+        </div>
+        ''', unsafe_allow_html=True)
+        st.plotly_chart(
+            create_pillar_chart(xhs_df, "Year", "XHS", "#fbbf24", "#d97706", "#fcd34d", "XHS"), 
+            width='stretch'
+        )
+

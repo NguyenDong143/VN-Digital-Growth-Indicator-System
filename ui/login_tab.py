@@ -331,8 +331,8 @@ def render_login():
     
     st.markdown(f"""
     <div style="display: flex; justify-content: center; align-items: center; gap: 20px; padding: 15px 0; position: relative; z-index: 1;">
-        <img src="data:image/png;base64,{logo1_b64}" style="height: 60px; width: auto; border-radius: 8px; background: white; padding: 5px;">
-        <img src="data:image/png;base64,{logo2_b64}" style="height: 60px; width: auto; border-radius: 8px; background: white; padding: 5px;">
+        <img src="data:image/png;base64,{logo1_b64}" style="height: 90px; width: auto; border-radius: 8px; background: white; padding: 5px;">
+        <img src="data:image/png;base64,{logo2_b64}" style="height: 90px; width: auto; border-radius: 8px; background: white; padding: 5px;">
     </div>
     """, unsafe_allow_html=True)
 
@@ -388,27 +388,31 @@ def render_login():
         </div>
         """, unsafe_allow_html=True)
         
-        username = st.text_input("👤 Tên đăng nhập", placeholder="Nhập tên đăng nhập", key="login_user")
-        password = st.text_input("🔑 Mật khẩu", type="password", placeholder="Nhập mật khẩu", key="login_pass")
-        
-        st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
-        
-        if st.button("✨ Đăng nhập", type="primary", key="login_btn", width="stretch"):
-            if not username or not password:
-                st.error("⚠️ Vui lòng nhập đầy đủ thông tin!")
-            else:
-                with st.spinner("Đang xác thực..."):
-                    time.sleep(0.5)
-                    role = verify_user(username, password)
-                    if role:
-                        st.session_state.authenticated = True
-                        st.session_state.user = username
-                        st.session_state.role = role
-                        st.success("✅ Đăng nhập thành công!")
+        # Sử dụng form để hỗ trợ Enter key đăng nhập
+        with st.form("login_form", border=False):
+            username = st.text_input("👤 Tên đăng nhập", placeholder="Nhập tên đăng nhập", key="login_user")
+            password = st.text_input("🔑 Mật khẩu", type="password", placeholder="Nhập mật khẩu", key="login_pass")
+            
+            st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+            
+            submitted = st.form_submit_button("✨ Đăng nhập", type="primary", width='stretch')
+            
+            if submitted:
+                if not username or not password:
+                    st.error("⚠️ Vui lòng nhập đầy đủ thông tin!")
+                else:
+                    with st.spinner("Đang xác thực..."):
                         time.sleep(0.5)
-                        st.rerun()
-                    else:
-                        st.error("❌ Sai tên đăng nhập hoặc mật khẩu")
+                        role = verify_user(username, password)
+                        if role:
+                            st.session_state.authenticated = True
+                            st.session_state.user = username
+                            st.session_state.role = role
+                            st.success("✅ Đăng nhập thành công!")
+                            time.sleep(0.5)
+                            st.rerun()
+                        else:
+                            st.error("❌ Sai tên đăng nhập hoặc mật khẩu")
         
         st.markdown('<div class="divider"><span>hoặc</span></div>', unsafe_allow_html=True)
         

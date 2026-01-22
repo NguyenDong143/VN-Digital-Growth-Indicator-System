@@ -23,6 +23,10 @@ def render():
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     
+    * {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    }
+    
     .admin-header {
         text-align: center;
         padding: 20px 0 30px;
@@ -37,48 +41,49 @@ def render():
         font-size: 2.2rem;
         font-weight: 700;
         margin-bottom: 10px;
-        font-family: 'Inter', sans-serif;
+        letter-spacing: -0.02em;
     }
     
     .admin-header p {
-        color: #94a3b8;
-        font-size: 1rem;
-        font-family: 'Inter', sans-serif;
+        color: #cbd5e1;
+        font-size: 1.1rem;
+        font-weight: 400;
     }
     
     .stat-card {
         background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
         border-radius: 16px;
-        padding: 20px;
+        padding: 24px;
         text-align: center;
-        border: 1px solid rgba(148, 163, 184, 0.1);
+        border: 1px solid rgba(148, 163, 184, 0.15);
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         transition: all 0.3s ease;
     }
     
     .stat-card:hover {
-        transform: translateY(-3px);
+        transform: translateY(-4px);
         box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
     }
     
     .stat-value {
-        font-size: 2.5rem;
+        font-size: 2.8rem;
         font-weight: 700;
-        font-family: 'Inter', sans-serif;
+        letter-spacing: -0.02em;
     }
     
     .stat-label {
-        color: #94a3b8;
-        font-size: 0.9rem;
-        margin-top: 5px;
+        color: #e2e8f0;
+        font-size: 0.95rem;
+        font-weight: 500;
+        margin-top: 8px;
     }
     
     .section-header {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
         margin: 25px 0 15px;
-        padding: 12px 18px;
+        padding: 14px 20px;
         background: linear-gradient(90deg, rgba(244, 114, 182, 0.1) 0%, transparent 100%);
         border-left: 4px solid #f472b6;
         border-radius: 0 12px 12px 0;
@@ -86,20 +91,20 @@ def render():
     
     .section-header h3 {
         color: #f1f5f9;
-        font-size: 1.1rem;
+        font-size: 1.15rem;
         font-weight: 600;
         margin: 0;
-        font-family: 'Inter', sans-serif;
+        letter-spacing: -0.01em;
     }
     
     .user-badge {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        padding: 6px 12px;
+        padding: 8px 14px;
         border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 500;
+        font-size: 0.85rem;
+        font-weight: 600;
     }
     
     .badge-admin { background: rgba(244, 114, 182, 0.2); color: #f472b6; }
@@ -113,10 +118,11 @@ def render():
     .download-btn {
         background: linear-gradient(135deg, #f472b6, #c084fc);
         color: white;
-        padding: 12px 24px;
-        border-radius: 10px;
+        padding: 14px 28px;
+        border-radius: 12px;
         border: none;
         font-weight: 600;
+        font-size: 1rem;
         cursor: pointer;
         transition: all 0.3s ease;
     }
@@ -127,6 +133,31 @@ def render():
         background: rgba(30, 41, 59, 0.5);
         border-radius: 16px;
         border: 2px dashed rgba(148, 163, 184, 0.2);
+    }
+    
+    .empty-state h3 {
+        color: #e2e8f0 !important;
+        font-weight: 600;
+    }
+    
+    .empty-state p {
+        color: #94a3b8 !important;
+    }
+    
+    /* Better table styling */
+    .stDataFrame {
+        font-size: 14px !important;
+    }
+    
+    /* Tab styling */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        font-size: 1rem;
+        font-weight: 500;
+        color: #e2e8f0;
     }
     
     @keyframes fadeIn {
@@ -340,6 +371,45 @@ def render():
     # ============================================================
     with tab2:
         
+        # Initialize session state for delete confirmation
+        if "delete_confirm_user" not in st.session_state:
+            st.session_state.delete_confirm_user = None
+        if "delete_success_msg" not in st.session_state:
+            st.session_state.delete_success_msg = None
+        
+        # Show success message if exists
+        if st.session_state.delete_success_msg:
+            st.success(st.session_state.delete_success_msg)
+            st.session_state.delete_success_msg = None
+        
+        # Delete confirmation dialog
+        if st.session_state.delete_confirm_user:
+            user_to_delete = st.session_state.delete_confirm_user
+            
+            st.warning(f"⚠️ **Xác nhận xóa user**")
+            st.markdown(f"""
+            Bạn có chắc chắn muốn xóa user **`{user_to_delete}`**?
+            
+            Hành động này không thể hoàn tác!
+            """)
+            
+            col_yes, col_no = st.columns(2)
+            with col_yes:
+                if st.button("✅ Xác nhận xóa", type="primary", width="stretch", key="confirm_delete_yes"):
+                    if delete_user(user_to_delete):
+                        st.session_state.delete_success_msg = f"✅ Đã xóa user '{user_to_delete}' thành công!"
+                        st.session_state.delete_confirm_user = None
+                        st.rerun()
+                    else:
+                        st.error("❌ Xóa thất bại!")
+                        st.session_state.delete_confirm_user = None
+            with col_no:
+                if st.button("❌ Hủy", width="stretch", key="confirm_delete_no"):
+                    st.session_state.delete_confirm_user = None
+                    st.rerun()
+            
+            st.markdown("<hr style='border-color: rgba(148, 163, 184, 0.2);'>", unsafe_allow_html=True)
+        
         # --------------------------------------------------------
         # SECTION 2: USER LIST WITH EDIT/DELETE
         # --------------------------------------------------------
@@ -520,14 +590,13 @@ def render():
                             is_self = (user.get("username") == current_login_user)
                             if st.button("🗑️ Xóa", key=f"delete_{user.get('id')}", type="secondary", width="stretch", disabled=is_self):
                                 if not is_self:
-                                    if delete_user(user.get("username")):
-                                        st.success(f"✅ Đã xóa user '{user.get('username')}'!")
-                                        st.rerun()
-                                    else:
-                                        st.error("❌ Xóa thất bại!")
+                                    # Set user to delete and show confirmation
+                                    st.session_state.delete_confirm_user = user.get("username")
+                                    st.rerun()
                 
             else:
                 st.info("Chưa có user nào trong hệ thống.")
                 
         except Exception as e:
             st.error(f"Không thể tải danh sách user: {e}")
+

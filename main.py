@@ -44,6 +44,7 @@ from ui import (
     regression_tab,
     input_tab,
     admin_tab,
+    profile_tab,
     style
 )
 from ui.login_tab import render_login
@@ -102,9 +103,9 @@ st.sidebar.markdown(f"""
 # ---- INIT MENU STATE ----
 if "current_menu" not in st.session_state:
     if role == "admin":
-        st.session_state.current_menu = "📈 GDP & DTI Overview"
+        st.session_state.current_menu = "📈 Tổng quan GDP & DTI"
     else:
-        st.session_state.current_menu = "📝 Input Provincial Indicators"
+        st.session_state.current_menu = "📝 Nhập dữ liệu"
 
 # ---- SIDEBAR BUTTON STYLE ----
 st.sidebar.markdown("""
@@ -156,18 +157,21 @@ section[data-testid="stSidebar"] hr {
 # ---- MENU BUTTONS ----
 
 if role == "admin":
-    if st.sidebar.button("📈 GDP & DTI Overview", key="btn_overview", width="stretch"):
-        st.session_state.current_menu = "📈 GDP & DTI Overview"
+    if st.sidebar.button("📈 Tổng quan GDP & DTI", key="btn_overview", width="stretch"):
+        st.session_state.current_menu = "📈 Tổng quan GDP & DTI"
         st.rerun()
-    if st.sidebar.button("🧩 Digital Transformation Pillars", key="btn_pillars", width="stretch"):
-        st.session_state.current_menu = "🧩 Digital Transformation Pillars"
+    if st.sidebar.button("🧩 Các lĩnh vực đổi mới", key="btn_pillars", width="stretch"):
+        st.session_state.current_menu = "🧩 Các lĩnh vực đổi mới"
         st.rerun()
     if st.sidebar.button("📋 Admin Data View", key="btn_admin", width="stretch"):
         st.session_state.current_menu = "📋 Admin Data View"
         st.rerun()
 else:
-    if st.sidebar.button("📝 Input Provincial Indicators", key="btn_input", width="stretch"):
-        st.session_state.current_menu = "📝 Input Provincial Indicators"
+    if st.sidebar.button("📝 Nhập dữ liệu", key="btn_input", width="stretch"):
+        st.session_state.current_menu = "📝 Nhập dữ liệu"
+        st.rerun()
+    if st.sidebar.button("👤 Tài khoản", key="btn_profile", width="stretch"):
+        st.session_state.current_menu = "👤 Tài khoản"
         st.rerun()
 
 st.sidebar.markdown("<hr style='margin: 8px 0;'>", unsafe_allow_html=True)
@@ -178,16 +182,16 @@ logout()
 # PAGE ROUTING
 menu = st.session_state.current_menu
 
-if menu == "📈 GDP & DTI Overview":
+if menu == "📈 Tổng quan GDP & DTI":
     overview_tab.render()
-elif menu == "🧩 Digital Transformation Pillars":
+elif menu == "🧩 Các lĩnh vực đổi mới":
     components_tab.render()
-elif menu == "📊 Regression Analysis":
-    regression_tab.render()
 elif menu == "📋 Admin Data View":
     admin_tab.render()
-elif menu == "📝 Input Provincial Indicators":
+elif menu == "📝 Nhập dữ liệu":
     input_tab.render()
+elif menu == "👤 Tài khoản":
+    profile_tab.render()
 
 # FOOTER
 st.markdown("<hr style='border: 1px solid #1e293b;'>", unsafe_allow_html=True)

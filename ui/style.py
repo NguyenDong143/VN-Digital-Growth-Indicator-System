@@ -11,18 +11,35 @@ def apply_dark_theme():
     st.markdown("""
         <style>
         /* =========================================
+           GOOGLE FONTS - Newspaper Style
+        ========================================= */
+        @import url('https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;600;700&family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap');
+        
+        /* =========================================
            GLOBAL PAGE SETTINGS
         ========================================= */
         .stApp {
             background: linear-gradient(145deg, #0f172a, #1e293b);
             color: #e2e8f0;
-            font-family: "Segoe UI", sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 15px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         /* =========================================
-           HEADINGS
+           HEADINGS - Newspaper Serif Style
         ========================================= */
-        h1, h2, h3, h4, h5, h6 {
+        h1, h2, h3 {
+            font-family: 'Source Serif Pro', 'Merriweather', Georgia, serif !important;
+            color: #38bdf8 !important;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        
+        h4, h5, h6 {
+            font-family: 'Inter', sans-serif !important;
             color: #38bdf8 !important;
             font-weight: 600;
         }
