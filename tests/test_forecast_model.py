@@ -75,6 +75,89 @@ class TestForecastHappyPath:
         assert not df.isna().any().any()
 
 
+class TestForecastProvinceAwareMerge:
+    """
+    Regression test: khi CSV có cột Province, merge chỉ theo Year sẽ tạo
+    cartesian product (N tỉnh × N tỉnh) và làm sai hoàn toàn hệ số hồi quy.
+    """
+
+    @pytest.fixture
+    def provincial_csv(self, tmp_path):
+        """3 tỉnh × 2 năm cho cả DTI và GDP."""
+        provinces = ["An Giang", "Bà Rịa - Vũng Tàu", "Cà Mau"]
+        rows_dti, rows_gdp = [], []
+        for prov in provinces:
+            for year, dti, gdp in [(2021, 0.30, 100.0), (2022, 0.50, 200.0)]:
+                rows_dti.append({"Province": prov, "Year": year, "DTI": dti})
+                rows_gdp.append({"Province": prov, "Year": year, "GDP": gdp})
+
+        dti_path = tmp_path / "DTI_prov.csv"
+        gdp_path = tmp_path / "GDP_prov.csv"
+        pd.DataFrame(rows_dti).to_csv(dti_path, index=False)
+        pd.DataFrame(rows_gdp).to_csv(gdp_path, index=False)
+
+        return str(dti_path), str(gdp_path)
+
+    def test_no_cartesian_product(self, provincial_csv):
+        """3 tỉnh × 2 năm = 6 dòng, không phải 18 (cartesian)."""
+        from models.forecast_model import forecast_gdp
+
+        dti_path, gdp_path = provincial_csv
+        df, _, _, _ = forecast_gdp(dti_path, gdp_path, end_year=2023)
+
+        assert len(df) == 6
+        assert df["Province"].nunique() == 3
+
+    def test_rows_pair_correct_province(self, provincial_csv):
+        """DTI và GDP phải thuộc cùng một tỉnh, không bị cross-product."""
+        from models.forecast_model import forecast_gdp
+
+        dti_path, gdp_path = provincial_csv
+        df, _, _, _ = forecast_gdp(dti_path, gdp_path, end_year=2023)
+
+        # Mỗi tỉnh có đúng 1 giá trị DTI và 1 GDP tương ứng theo năm
+        for province, group in df.groupby("Province"):
+            assert group["Year"].nunique() == 2
+            assert not group.duplicated(subset=["Year"]).any()
+
+    def test_coefficient_matches_known_pairing(self, provincial_csv):
+        """
+        Dữ liệu: DTI ∈ {0.3, 0.5}, GDP ∈ {100, 200} → đường thẳng GDP = 500·DTI − 50.
+        Nếu merge sai thành cartesian product, hệ số sẽ khác hẳn.
+        """
+        from models.forecast_model import forecast_gdp
+
+        dti_path, gdp_path = provincial_csv
+        _, _, coef, intercept = forecast_gdp(dti_path, gdp_path, end_year=2023)
+
+        assert coef == pytest.approx(500.0, rel=1e-6)
+        assert intercept == pytest.approx(-50.0, rel=1e-6)
+
+    def test_duplicate_province_year_deduped(self, tmp_path):
+        """Bản ghi trùng (Province, Year) phải được loại bỏ."""
+        from models.forecast_model import forecast_gdp
+
+        dti = pd.DataFrame({
+            "Province": ["A", "A", "B"],
+            "Year": [2021, 2021, 2021],
+            "DTI": [0.3, 0.9, 0.5],
+        })
+        gdp = pd.DataFrame({
+            "Province": ["A", "A", "B"],
+            "Year": [2021, 2021, 2021],
+            "GDP": [10.0, 20.0, 30.0],
+        })
+
+        dti_path = tmp_path / "dti_dup.csv"
+        gdp_path = tmp_path / "gdp_dup.csv"
+        dti.to_csv(dti_path, index=False)
+        gdp.to_csv(gdp_path, index=False)
+
+        df, _, _, _ = forecast_gdp(str(dti_path), str(gdp_path), end_year=2022)
+        assert len(df) == 2
+        assert not df.duplicated(subset=["Province", "Year"]).any()
+
+
 class TestForecastAcceptsValueColumn:
     """CSV dùng tên cột 'Value' thay vì 'DTI'/'GDP' vẫn phải chạy được."""
 

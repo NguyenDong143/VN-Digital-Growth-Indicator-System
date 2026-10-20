@@ -49,8 +49,22 @@ def forecast_gdp(
     if "GDP" not in df_gdp.columns:
         raise ValueError(f"File {gdp_path} thiếu cột 'GDP' hoặc 'Value'.")
 
-    df = pd.merge(df_dti[["Year", "DTI"]], df_gdp[["Year", "GDP"]], on="Year")
+    # Dữ liệu có cấu trúc theo tỉnh (mỗi tỉnh một dòng cho mỗi năm) nên bắt buộc
+    # merge theo (Year, Province). Chỉ merge theo Year sẽ tạo cartesian product
+    # (63 tỉnh × 63 tỉnh × 4 năm = 15.876 dòng thay vì 252) và làm sai hệ số hồi quy.
+    merge_keys = ["Year"]
+    if "Province" in df_dti.columns and "Province" in df_gdp.columns:
+        merge_keys.append("Province")
+
+    df = pd.merge(
+        df_dti[[*merge_keys, "DTI"]],
+        df_gdp[[*merge_keys, "GDP"]],
+        on=merge_keys,
+    )
     df = df.dropna(subset=["Year", "DTI", "GDP"])
+
+    # Loại bỏ bản ghi trùng (Year, Province) — giữ bản ghi đầu tiên.
+    df = df.drop_duplicates(subset=merge_keys, keep="first")
 
     if len(df) < 2:
         raise ValueError(
