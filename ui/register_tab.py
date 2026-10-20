@@ -3,7 +3,9 @@ warnings.filterwarnings('ignore')
 
 import streamlit as st
 import time
-from utils.auth_manager import register_user
+import os
+from utils.auth_manager import register_user, validate_password_strength
+from config.settings import ADMIN_SECRET
 
 
 def render_register():
@@ -376,7 +378,7 @@ def render_register():
         """, unsafe_allow_html=True)
         
         username = st.text_input("👤 Tên đăng nhập", placeholder="Chọn tên đăng nhập", key="reg_user")
-        password = st.text_input("🔑 Mật khẩu", type="password", placeholder="Tạo mật khẩu (tối thiểu 4 ký tự)", key="reg_pass")
+        password = st.text_input("🔑 Mật khẩu", type="password", placeholder="Tối thiểu 8 ký tự: hoa + thường + số + ký tự đặc biệt", key="reg_pass")
         confirm = st.text_input("🔐 Xác nhận mật khẩu", type="password", placeholder="Nhập lại mật khẩu", key="reg_confirm")
         
         role = st.selectbox("🎭 Vai trò", ["province", "admin"],
@@ -400,13 +402,20 @@ def render_register():
         st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
         
         if st.button("✨ Đăng ký", type="primary", key="register_submit", width="stretch"):
+            is_strong, pw_msg = validate_password_strength(password) if password else (False, "")
+
             if not username or not password or not confirm:
                 st.error("⚠️ Vui lòng nhập đầy đủ thông tin!")
             elif password != confirm:
                 st.error("❌ Mật khẩu không khớp!")
-            elif len(password) < 4:
-                st.error("⚠️ Mật khẩu phải có ít nhất 4 ký tự!")
-            elif role == "admin" and admin_secret_code != "123456":
+            elif not is_strong:
+                st.error(f"❌ {pw_msg}")
+            elif role == "admin" and not ADMIN_SECRET:
+                st.error(
+                    "❌ Tạo tài khoản Admin bị vô hiệu hóa vì server chưa cấu hình "
+                    "biến môi trường ADMIN_SECRET. Liên hệ quản trị viên."
+                )
+            elif role == "admin" and admin_secret_code != ADMIN_SECRET:
                 st.error("❌ Mã bảo mật Admin không chính xác!")
             else:
                 with st.spinner("Đang tạo tài khoản..."):

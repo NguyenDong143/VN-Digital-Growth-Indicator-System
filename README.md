@@ -140,12 +140,21 @@ http://localhost:8501
 ```
 
 ### Tài khoản mặc định
-| Username | Password | Role |
-|----------|----------|------|
-| admin | admin123 | Admin |
-| user | user123 | Province |
-|register|role admin|mã: 123456|
----
+Đăng ký tài khoản Province ngay trong UI (không cần mã).
+
+Để tạo tài khoản Admin, **cần 2 điều kiện**:
+1. **Đặt biến môi trường `ADMIN_SECRET`** trước khi chạy app (admin mới nhập giá trị này làm mã bảo mật).
+   ```powershell
+   $env:ADMIN_SECRET="MotMaBiMatRatManh@2026"
+   uv run streamlit run main.py
+   ```
+2. Mật khẩu mới phải ≥ 8 ký tự, có chữ hoa + thường + số + ký tự đặc biệt.
+
+Nếu `ADMIN_SECRET` chưa được set, đăng ký Admin bị vô hiệu hóa hoàn toàn.
+
+> ⚠️ Nếu dữ liệu mẫu trong `data/db/users.db` còn lưu tài khoản cũ (admin/admin123, user/user123),
+> hãy **xoá file** này trước khi chạy production: `Remove-Item data/db/users.db`.
+> Account mới sẽ được tạo qua form đăng ký với policy mới.
 
 ## 👥 Vai trò người dùng
 

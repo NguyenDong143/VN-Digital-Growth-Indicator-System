@@ -3,7 +3,8 @@ warnings.filterwarnings('ignore')
 
 import streamlit as st
 import time
-from utils.auth_manager import verify_user
+from utils.auth_manager import verify_user, login_user
+from utils.database import log_audit
 
 
 def render_login():
@@ -408,10 +409,12 @@ def render_login():
                             st.session_state.authenticated = True
                             st.session_state.user = username
                             st.session_state.role = role
+                            log_audit(username, "login", None, f"role={role}")
                             st.success("✅ Đăng nhập thành công!")
                             time.sleep(0.5)
                             st.rerun()
                         else:
+                            log_audit(username or "anonymous", "login_failed", None, None)
                             st.error("❌ Sai tên đăng nhập hoặc mật khẩu")
         
         st.markdown('<div class="divider"><span>hoặc</span></div>', unsafe_allow_html=True)

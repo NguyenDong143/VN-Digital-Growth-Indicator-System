@@ -1,13 +1,29 @@
 import warnings
 warnings.filterwarnings('ignore')
 
+import bcrypt
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 from datetime import datetime
 from config.settings import DATA_PATHS
-from utils.database import get_all_users, delete_user, update_user_role, update_user_password, add_user
+from utils.auth_manager import validate_password_strength
+from utils.database import (
+    get_all_users,
+    delete_user,
+    update_user_role,
+    update_user_password,
+    add_user,
+    get_audit_log,
+    get_audit_actions,
+    count_audit_log,
+    log_audit,
+)
+
+
+def _current_admin() -> str:
+    """Tên admin đang đăng nhập (dùng làm actor cho audit log)."""
+    return st.session_state.get("user") or "unknown"
 
 
 def render():
@@ -187,7 +203,7 @@ def render():
     # ============================================================
     # TABS
     # ============================================================
-    tab1, tab2 = st.tabs(["📊 Dữ liệu Tỉnh", "👥 Quản lý User"])
+    tab1, tab2, tab3 = st.tabs(["📊 Dữ liệu Tỉnh", "👥 Quản lý User", "📜 Nhật ký"])
     
     # ============================================================
     # TAB 1: PROVINCIAL DATA
@@ -397,6 +413,12 @@ def render():
             with col_yes:
                 if st.button("✅ Xác nhận xóa", type="primary", width="stretch", key="confirm_delete_yes"):
                     if delete_user(user_to_delete):
+                        log_audit(
+                            _current_admin(),
+                            "delete_user",
+                            user_to_delete,
+                            "removed from users table",
+                        )
                         st.session_state.delete_success_msg = f"✅ Đã xóa user '{user_to_delete}' thành công!"
                         st.session_state.delete_confirm_user = None
                         st.rerun()
@@ -467,29 +489,51 @@ def render():
                                 edit_password = st.text_input(
                                     "🔑 Mật khẩu mới (để trống nếu không đổi)",
                                     type="password",
-                                    placeholder="Nhập mật khẩu mới",
+                                    placeholder="≥8 ký tự: hoa + thường + số + ký tự đặc biệt",
                                     key="edit_password"
                                 )
                             
                             col_save, col_cancel = st.columns(2)
                             with col_save:
                                 if st.button("💾 Lưu thay đổi", type="primary", width="stretch", key="btn_save_edit"):
-                                    success = False
-                                    # Update role
-                                    if update_user_role(editing_user.get("username"), edit_role):
-                                        success = True
-                                    # Update password if provided
-                                    if edit_password and len(edit_password) >= 4:
-                                        import bcrypt
-                                        hashed_pw = bcrypt.hashpw(edit_password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-                                        if update_user_password(editing_user.get("username"), hashed_pw):
-                                            success = True
-                                    
-                                    if success:
+                                    changed = False
+                                    target_username = editing_user.get("username")
+
+                                    # --- Đổi vai trò ---
+                                    if edit_role != editing_user.get("role"):
+                                        if update_user_role(target_username, edit_role):
+                                            log_audit(
+                                                _current_admin(),
+                                                "change_role",
+                                                target_username,
+                                                f"{editing_user.get('role')} -> {edit_role}",
+                                            )
+                                            changed = True
+
+                                    # --- Đổi mật khẩu (áp dụng password policy đầy đủ) ---
+                                    if edit_password:
+                                        is_strong, msg = validate_password_strength(edit_password)
+                                        if not is_strong:
+                                            st.error(f"❌ {msg}")
+                                            changed = None  # tín hiệu lỗi, không rerun
+                                        else:
+                                            hashed_pw = bcrypt.hashpw(
+                                                edit_password.encode("utf-8"),
+                                                bcrypt.gensalt(),
+                                            ).decode("utf-8")
+                                            if update_user_password(target_username, hashed_pw):
+                                                log_audit(
+                                                    _current_admin(),
+                                                    "change_password",
+                                                    target_username,
+                                                )
+                                                changed = True
+
+                                    if changed is True:
                                         st.success("✅ Đã cập nhật thành công!")
                                         st.session_state.editing_user_id = None
                                         st.rerun()
-                                    else:
+                                    elif changed is False:
                                         st.error("❌ Cập nhật thất bại!")
                             
                             with col_cancel:
@@ -521,7 +565,7 @@ def render():
                     col_a1, col_a2 = st.columns(2)
                     with col_a1:
                         add_username = st.text_input("👤 Username", placeholder="Nhập username", key="add_new_username")
-                        add_password = st.text_input("🔑 Mật khẩu", type="password", placeholder="Nhập mật khẩu", key="add_new_password")
+                        add_password = st.text_input("🔑 Mật khẩu", type="password", placeholder="≥8 ký tự: hoa + thường + số + ký tự đặc biệt", key="add_new_password")
                     with col_a2:
                         add_role = st.selectbox(
                             "🎭 Vai trò",
@@ -538,17 +582,27 @@ def render():
                                 st.error("⚠️ Vui lòng nhập đầy đủ thông tin!")
                             elif add_password != add_confirm:
                                 st.error("❌ Mật khẩu không khớp!")
-                            elif len(add_password) < 4:
-                                st.error("⚠️ Mật khẩu phải có ít nhất 4 ký tự!")
                             else:
-                                import bcrypt
-                                hashed_pw = bcrypt.hashpw(add_password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-                                if add_user(add_username, hashed_pw, add_role):
-                                    st.success(f"✅ Đã tạo user '{add_username}' thành công!")
-                                    st.session_state.show_add_user_form = False
-                                    st.rerun()
+                                is_strong, msg = validate_password_strength(add_password)
+                                if not is_strong:
+                                    st.error(f"❌ {msg}")
                                 else:
-                                    st.error("⚠️ Username đã tồn tại!")
+                                    hashed_pw = bcrypt.hashpw(
+                                        add_password.encode("utf-8"),
+                                        bcrypt.gensalt(),
+                                    ).decode("utf-8")
+                                    if add_user(add_username, hashed_pw, add_role):
+                                        log_audit(
+                                            _current_admin(),
+                                            "create_user",
+                                            add_username,
+                                            f"role={add_role}",
+                                        )
+                                        st.success(f"✅ Đã tạo user '{add_username}' thành công!")
+                                        st.session_state.show_add_user_form = False
+                                        st.rerun()
+                                    else:
+                                        st.error("⚠️ Username đã tồn tại!")
                     with col_cancel_btn:
                         if st.button("❌ Hủy", width="stretch", key="btn_cancel_add"):
                             st.session_state.show_add_user_form = False
@@ -599,4 +653,109 @@ def render():
                 
         except Exception as e:
             st.error(f"Không thể tải danh sách user: {e}")
+
+    # ============================================================
+    # TAB 3: AUDIT LOG
+    # ============================================================
+    with tab3:
+        st.markdown("""
+        <div class="section-header">
+            <span style="font-size: 1.3rem;">📜</span>
+            <h3>Nhật ký hoạt động (Audit Log)</h3>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.caption(
+            "Ghi lại mọi thao tác nhạy cảm: đăng nhập, đăng xuất, đăng ký, "
+            "quản lý tài khoản. Chỉ admin được xem."
+        )
+
+        try:
+            total_logs = count_audit_log()
+
+            # ---- Bộ lọc ----
+            f_col1, f_col2, f_col3, f_col4 = st.columns([1.4, 1.4, 1.4, 1])
+
+            available_actions = get_audit_actions()
+            known_actions = [
+                "login", "login_failed", "logout", "register",
+                "create_user", "change_role", "change_password",
+                "delete_user", "session_timeout",
+            ]
+            # Giữ thứ tự ổn định: ưu tiên action đã biết, rồi action lạ.
+            ordered_actions = [a for a in known_actions if a in available_actions]
+            ordered_actions += sorted(set(available_actions) - set(ordered_actions))
+
+            # Danh sách actor lấy từ toàn bộ nhật ký (cap 1000 dòng cho nhẹ).
+            known_actors = sorted({
+                row.get("actor")
+                for row in get_audit_log(limit=1000)
+                if row.get("actor")
+            })
+
+            with f_col1:
+                action_filter = st.selectbox(
+                    "🔍 Hành động",
+                    ["(tất cả)"] + ordered_actions,
+                    key="audit_filter_action",
+                )
+            with f_col2:
+                actor_filter = st.selectbox(
+                    "👤 Người thực hiện",
+                    ["(tất cả)"] + known_actors,
+                    key="audit_filter_actor",
+                )
+            with f_col3:
+                limit_filter = st.number_input(
+                    "📄 Số dòng",
+                    min_value=25,
+                    max_value=1000,
+                    value=200,
+                    step=25,
+                    key="audit_filter_limit",
+                )
+            with f_col4:
+                st.write("")
+                st.write("")
+                st.button("🔄 Tải lại", width="stretch", key="audit_refresh")
+
+            # ---- Áp dụng bộ lọc ----
+            rows = get_audit_log(
+                limit=int(limit_filter),
+                actor=None if actor_filter == "(tất cả)" else actor_filter,
+                action=None if action_filter == "(tất cả)" else action_filter,
+            )
+
+            # ---- Thống kê ----
+            s1, s2, s3 = st.columns(3)
+            s1.metric("📚 Tổng nhật ký", total_logs)
+            s2.metric("🔎 Kết quả lọc", len(rows))
+            failed_count = sum(1 for r in rows if r.get("action") == "login_failed")
+            s3.metric("⚠️ Đăng nhập thất bại", failed_count)
+
+            st.markdown("<br>", unsafe_allow_html=True)
+
+            # ---- Bảng dữ liệu ----
+            if rows:
+                log_df = pd.DataFrame(rows)
+                log_df.columns = ["Thời gian", "Người thực hiện", "Hành động", "Đối tượng", "Chi tiết"]
+                log_df = log_df.fillna("—")
+
+                st.dataframe(log_df, width="stretch", height=460)
+
+                # ---- Xuất CSV ----
+                csv_data = log_df.to_csv(index=False).encode("utf-8-sig")
+                st.download_button(
+                    label="💾 Xuất nhật ký (CSV)",
+                    data=csv_data,
+                    file_name=f"audit_log_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+                    mime="text/csv",
+                    width="stretch",
+                    key="audit_download_csv",
+                )
+            else:
+                st.info("Chưa có nhật ký nào khớp bộ lọc.")
+
+        except Exception as e:
+            st.error(f"Không thể tải nhật ký: {e}")
 

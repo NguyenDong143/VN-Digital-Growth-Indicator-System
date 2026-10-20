@@ -1,97 +1,79 @@
-# import streamlit as st
-# import pandas as pd
-# import plotly.express as px
-# from models.regression_model import run_regression
+import warnings
+warnings.filterwarnings('ignore')
 
-# def render():
-#     """
-#     Render the Regression Analysis tab for the Digital Transformation & GDP Growth Dashboard.
-#     Runs an OLS regression to evaluate the impact of CQS, KTS, XHS, and DTI on GDP.
-#     """
+import streamlit as st
+import pandas as pd
+import plotly.express as px
 
-#     # ======================================================
-#     # 1️⃣ Page Header
-#     # ======================================================
-#     st.title("📈 Regression Analysis: Impact of Digital Indicators on GDP")
-#     st.markdown(
-#         """
-#         This section performs an **Ordinary Least Squares (OLS)** regression  
-#         to evaluate how Vietnam's **digital transformation indicators** —  
-#         **CQS (Digital Government)**, **KTS (Digital Economy)**, **XHS (Digital Society)**, and **DTI (Overall)**  
-#         — influence national **GDP growth**.
-#         """
-#     )
+from models.regression_model import run_regression
 
-#     # ======================================================
-#     # 2️⃣ Run Regression
-#     # ======================================================
-#     try:
-#         model = run_regression()
 
-#         # Extract coefficients
-#         coef_df = model.params.reset_index()
-#         coef_df.columns = ["Indicator", "Coefficient"]
-#         coef_df = coef_df[coef_df["Indicator"] != "const"]
+def render():
+    """
+    Render Regression Analysis tab: OLS impact of digital indicators on GDP.
+    """
+    st.title("📈 Regression Analysis: DTI → GDP")
 
-#         # Extract key stats
-#         r2 = model.rsquared
-#         pvalues = model.pvalues.round(4)
+    st.markdown(
+        "Phân tích hồi quy OLS đánh giá tác động của các chỉ số "
+        "**CQS (Chính quyền số), KTS (Kinh tế số), XHS (Xã hội số), DTI** "
+        "tới tăng trưởng GDP."
+    )
 
-#         # ======================================================
-#         # 3️⃣ Display Summary (Collapsible)
-#         # ======================================================
-#         with st.expander("📊 Detailed Regression Summary", expanded=True):
-#             st.text(model.summary())
+    try:
+        model = run_regression()
+    except Exception as exc:  # surface the error to user
+        st.error(f"⚠️ Không chạy được hồi quy: {exc}")
+        st.info(
+            "Đảm bảo các file tồn tại trong `data/csv/`: "
+            "GDP.csv, CQS.csv, KTS.csv, XHS.csv, DTI.csv "
+            "(cần cột `Year` và cột giá trị tương ứng)."
+        )
+        return
 
-#         # ======================================================
-#         # 4️⃣ Key Metrics
-#         # ======================================================
-#         st.markdown("### 🧭 Key Regression Metrics")
+    # ----- Coefficients table -----
+    coef_df = (
+        pd.DataFrame({"Indicator": model.params.index, "Coefficient": model.params.values})
+        .query("Indicator != 'const'")
+        .reset_index(drop=True)
+    )
+    pvalues = model.pvalues
 
-#         col1, col2, col3 = st.columns(3)
-#         col1.metric("R-squared", f"{r2:.3f}")
-#         col2.metric("Number of Variables", len(coef_df))
-#         col3.metric("Most Significant (Lowest P-Value)", pvalues.idxmin())
+    # ----- Metrics row -----
+    cols = st.columns(4)
+    cols[0].metric("R²", f"{model.rsquared:.3f}")
+    cols[1].metric("Adj. R²", f"{model.rsquared_adj:.3f}")
+    cols[2].metric("F-statistic", f"{model.fvalue:.2f}")
+    cols[3].metric("Observations", f"{int(model.nobs)}")
 
-#         # ======================================================
-#         # 5️⃣ Visualize Coefficients
-#         # ======================================================
-#         st.markdown("### 📊 Coefficient Impact on GDP")
+    st.markdown("### 🧭 Ý nghĩa thống kê")
+    sig_df = pd.DataFrame({
+        "Indicator": coef_df["Indicator"],
+        "Coefficient": coef_df["Coefficient"].round(4),
+        "P-value": [pvalues[ind] for ind in coef_df["Indicator"]],
+        "Significant (p<0.05)": [pvalues[ind] < 0.05 for ind in coef_df["Indicator"]],
+    })
+    st.dataframe(sig_df, use_container_width=True)
 
-#         fig = px.bar(
-#             coef_df,
-#             x="Indicator", y="Coefficient",
-#             text="Coefficient",
-#             color="Coefficient",
-#             color_continuous_scale="viridis",
-#             title="OLS Coefficients: Impact of Each Indicator on GDP"
-#         )
-#         fig.update_traces(texttemplate="%{text:.3f}", textposition="outside")
-#         fig.update_layout(yaxis_title="Coefficient β", height=400)
-#         st.plotly_chart(fig, use_container_width=True)
+    if int(model.nobs) < 8:
+        st.warning(
+            f"⚠️ Chỉ có {int(model.nobs)} quan sát — kết quả OLS chưa đủ tin cậy "
+            "về mặt thống kê. Khuyến nghị ≥ 8 năm dữ liệu (tốt nhất ≥ 20)."
+        )
 
-#         # ======================================================
-#         # 6️⃣ Interpretation
-#         # ======================================================
-#         st.markdown("---")
-#         st.markdown("### 📘 Interpretation Guide")
-#         st.markdown(
-#             """
-#             - **Coefficient (β):** Shows how each indicator contributes to GDP — a positive value indicates a positive impact.  
-#             - **P-value:** Tests statistical significance (values < 0.05 suggest a significant relationship).  
-#             - **R-squared:** Explains how well the digital indicators collectively explain GDP variation.  
-#             - **Highest β:** The indicator with the largest coefficient has the **strongest impact** on GDP.  
-#             """
-#         )
+    # ----- Bar chart of coefficients -----
+    st.markdown("### 📊 Hệ số hồi quy OLS")
+    fig = px.bar(
+        coef_df,
+        x="Indicator",
+        y="Coefficient",
+        color="Coefficient",
+        color_continuous_scale="RdBu_r",
+        title="OLS Coefficients: Impact of Each Indicator on GDP",
+    )
+    fig.update_layout(height=420, yaxis_title="Coefficient β")
+    st.plotly_chart(fig, use_container_width=True)
 
-#     except Exception as e:
-#         st.error(f"⚠️ Error running regression: {e}")
-#         st.info("""
-#         Please ensure the following files exist in your `data/` folder:
-#         - GDP.csv  
-#         - CQS.csv  
-#         - KTS.csv  
-#         - XHS.csv  
-#         - DTI.csv  
-#         Each should contain columns: `Year` and their respective index/value.
-#         """)
+    # ----- Full OLS summary -----
+    with st.expander("📋 OLS Summary chi tiết (statsmodels)"):
+        st.text(model.summary())
