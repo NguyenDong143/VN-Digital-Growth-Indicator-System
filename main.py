@@ -2,6 +2,8 @@ import warnings
 import os
 import sys
 import logging
+import time
+from config.settings import SESSION_TIMEOUT_SECONDS
 
 # Tắt tất cả warnings trước khi import bất kỳ thứ gì
 warnings.filterwarnings("ignore")
@@ -64,6 +66,28 @@ if "user" not in st.session_state:
     st.session_state.user = None
 if "role" not in st.session_state:
     st.session_state.role = None
+if "session_start_ts" not in st.session_state:
+    st.session_state.session_start_ts = time.time()
+
+# ---- SESSION TIMEOUT (auto-logout sau SESSION_TIMEOUT_SECONDS giây không hoạt động) ----
+if st.session_state.authenticated and (
+    time.time() - st.session_state.session_start_ts > SESSION_TIMEOUT_SECONDS
+):
+    from utils.database import log_audit
+    log_audit(
+        st.session_state.get("user") or "anonymous",
+        "session_timeout",
+        None,
+        f"timeout after {SESSION_TIMEOUT_SECONDS}s",
+    )
+    for _key in list(st.session_state.keys()):
+        del st.session_state[_key]
+    st.warning("⏰ Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.")
+    st.rerun()
+
+# Refresh timestamp khi user tương tác
+if st.session_state.authenticated:
+    st.session_state.session_start_ts = time.time()
 
 # LOGIN / REGISTER GIAO DIỆN
 if not st.session_state.authenticated:

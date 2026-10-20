@@ -1,7 +1,9 @@
 """
 Configuration file for the Digital GDP Dashboard.
-Contains page settings, theme colors, and data paths.
+Contains page settings, theme colors, data paths, and security.
 """
+
+import os
 
 # =========================================================
 # STREAMLIT PAGE SETTINGS
@@ -9,17 +11,34 @@ Contains page settings, theme colors, and data paths.
 PAGE_CONFIG = {
     "page_title": "Vietnam Digital Transformation & GDP Growth",
     "layout": "wide",
-    "initial_sidebar_state": "expanded",  # Sidebar luôn mở mặc định
+    "initial_sidebar_state": "expanded",
 }
 
 # =========================================================
 # THEME COLORS
 # =========================================================
 THEME = {
-    "background_color": "#0f172a",  # Dark navy background
-    "text_color": "white",          # Light text for contrast
-    "accent_color": "#38bdf8",      # Bright blue accent
+    "background_color": "#0f172a",
+    "text_color": "white",
+    "accent_color": "#38bdf8",
 }
+
+# =========================================================
+# SECURITY CONFIGURATION
+# =========================================================
+# Admin secret phải được set qua env var. Nếu không có, admin self-registration bị disable.
+ADMIN_SECRET = os.environ.get("ADMIN_SECRET", "")
+if not ADMIN_SECRET:
+    import warnings
+    warnings.warn(
+        "ADMIN_SECRET not set in environment. Admin self-registration will be disabled. "
+        "Set ADMIN_SECRET=<a-strong-passphrase> in .env or system env.",
+        RuntimeWarning,
+    )
+PASSWORD_MIN_LENGTH = int(os.environ.get("PASSWORD_MIN_LENGTH", "8"))
+LOGIN_MAX_ATTEMPTS = int(os.environ.get("LOGIN_MAX_ATTEMPTS", "5"))
+LOGIN_LOCKOUT_MINUTES = int(os.environ.get("LOGIN_LOCKOUT_MINUTES", "15"))
+SESSION_TIMEOUT_SECONDS = int(os.environ.get("SESSION_TIMEOUT_SECONDS", "3600"))
 
 # =========================================================
 # DATA CONFIGURATION

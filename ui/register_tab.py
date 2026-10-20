@@ -3,7 +3,9 @@ warnings.filterwarnings('ignore')
 
 import streamlit as st
 import time
+import os
 from utils.auth_manager import register_user
+from config.settings import ADMIN_SECRET
 
 
 def render_register():
@@ -404,9 +406,14 @@ def render_register():
                 st.error("⚠️ Vui lòng nhập đầy đủ thông tin!")
             elif password != confirm:
                 st.error("❌ Mật khẩu không khớp!")
-            elif len(password) < 4:
-                st.error("⚠️ Mật khẩu phải có ít nhất 4 ký tự!")
-            elif role == "admin" and admin_secret_code != "123456":
+            elif len(password) < 8:
+                st.error("⚠️ Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, thường, số và ký tự đặc biệt!")
+            elif role == "admin" and not ADMIN_SECRET:
+                st.error(
+                    "❌ Tạo tài khoản Admin bị vô hiệu hóa vì server chưa cấu hình "
+                    "biến môi trường ADMIN_SECRET. Liên hệ quản trị viên."
+                )
+            elif role == "admin" and admin_secret_code != ADMIN_SECRET:
                 st.error("❌ Mã bảo mật Admin không chính xác!")
             else:
                 with st.spinner("Đang tạo tài khoản..."):
