@@ -150,8 +150,15 @@ def update_user_password(username: str, new_password_hash: str) -> bool:
 # =========================================================
 
 def register_login_failure(username: str) -> None:
-    """Tăng failed_attempts và cập nhật last_failed_at cho user."""
-    now = datetime.utcnow().isoformat(timespec="seconds")
+    """
+    Tăng failed_attempts và cập nhật last_failed_at cho user.
+
+    Lưu ý: dùng local time (naive) để khớp với ``_is_locked_out`` trong
+    ``auth_manager`` vốn so sánh bằng ``datetime.now()``. Trước đây dùng
+    ``datetime.utcnow()`` khiến chênh lệch múi giờ (7h ở VN) và lockout
+    không bao giờ trigger.
+    """
+    now = datetime.now().isoformat(timespec="seconds")
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
@@ -192,13 +199,61 @@ def log_audit(actor: str, action: str, target: str = None, details: str = None) 
         conn.commit()
 
 
-def get_audit_log(limit: int = 200) -> list[dict]:
-    """Lấy audit_log mới nhất (mặc định 200 dòng)."""
+def get_audit_log(
+    limit: int = 200,
+    actor: str | None = None,
+    action: str | None = None,
+    since: str | None = None,
+) -> list[dict]:
+    """
+    Lấy audit_log mới nhất (mặc định 200 dòng).
+
+    Parameters
+    ----------
+    limit : int
+        Số dòng tối đa trả về.
+    actor : str | None
+        Lọc theo actor (khớp chính xác, bỏ qua nếu None/rỗng).
+    action : str | None
+        Lọc theo action (khớp chính xác, bỏ qua nếu None/rỗng).
+    since : str | None
+        Chỉ lấy bản ghi có timestamp >= ``since`` (định dạng ISO).
+    """
+    clauses, params = [], []
+    if actor:
+        clauses.append("actor = ?")
+        params.append(actor)
+    if action:
+        clauses.append("action = ?")
+        params.append(action)
+    if since:
+        clauses.append("timestamp >= ?")
+        params.append(since)
+
+    where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
+    query = (
+        "SELECT timestamp, actor, action, target, details "
+        f"FROM audit_log {where} ORDER BY id DESC LIMIT ?"
+    )
+    params.append(limit)
+
     with get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute(
-            "SELECT timestamp, actor, action, target, details "
-            "FROM audit_log ORDER BY id DESC LIMIT ?",
-            (limit,),
-        )
+        cursor.execute(query, params)
         return [dict(row) for row in cursor.fetchall()]
+
+
+def get_audit_actions() -> list[str]:
+    """Danh sách action duy nhất đã ghi nhận (để dựng bộ lọc trên UI)."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT DISTINCT action FROM audit_log ORDER BY action")
+        return [row["action"] for row in cursor.fetchall()]
+
+
+def count_audit_log() -> int:
+    """Tổng số bản ghi audit (để hiển thị thống kê)."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) AS n FROM audit_log")
+        return cursor.fetchone()["n"]

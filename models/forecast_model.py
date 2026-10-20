@@ -68,6 +68,17 @@ def forecast_gdp(
     future_years = np.arange(last_year + 1, end_year + 1)
     n_future = len(future_years)
 
+    # Không có năm nào cần dự báo (end_year <= năm cuối dữ liệu).
+    # Trả về DataFrame rỗng đúng schema thay vì để sklearn ném lỗi
+    # "Found array with 0 sample(s)" khi predict với mảng rỗng.
+    if n_future == 0:
+        empty_forecast = pd.DataFrame({
+            "Year": future_years,
+            "Predicted_DTI": pd.Series(dtype="float64"),
+            "Predicted_GDP": pd.Series(dtype="float64"),
+        })
+        return df, empty_forecast, float(model.coef_[0]), float(model.intercept_)
+
     # Tốc độ tăng DTI/năm dựa trên lịch sử (cap ở [0, 1])
     if len(df) >= 2:
         avg_dti_growth = (df["DTI"].iloc[-1] - df["DTI"].iloc[0]) / max(

@@ -12,6 +12,7 @@ from utils.database import (
     get_all_users,
     register_login_failure,
     reset_login_failures,
+    log_audit,
 )
 from config.settings import (
     PASSWORD_MIN_LENGTH,
@@ -158,6 +159,7 @@ def register_user(username: str, password: str, confirm_pw: str, role: str = "pr
         st.error(f"❌ {e}")
         return
     if success:
+        log_audit(username, "register", username, f"role={role}")
         st.success("✅ Tạo tài khoản thành công! Vui lòng đăng nhập.")
         st.session_state.page = "login"
         st.rerun()
@@ -168,6 +170,11 @@ def register_user(username: str, password: str, confirm_pw: str, role: str = "pr
 def logout():
     """Đăng xuất và làm sạch session"""
     if st.sidebar.button("🚪 Đăng xuất"):
+        # Ghi audit TRƯỚC khi xóa session, nếu không sẽ mất thông tin actor.
+        log_audit(
+            st.session_state.get("user") or "anonymous",
+            "logout",
+        )
         for key in list(st.session_state.keys()):
             del st.session_state[key]
         st.sidebar.success("✅ Đã đăng xuất.")
