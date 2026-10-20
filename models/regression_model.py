@@ -34,9 +34,10 @@ def run_regression(model_type="dti"):
     dti = pd.read_csv(DATA_PATHS["DTI"])
 
     # =========================================================
-    # 2️⃣ Aggregate by Year (average across provinces)
+    # 2️⃣ Aggregate by Year (mean across provinces cho tính nhất quán)
     # =========================================================
-    gdp = gdp.groupby("Year", as_index=False)["GDP"].sum()
+    gdp_agg = "mean" if "GDP" in gdp.columns else None
+    gdp = gdp.groupby("Year", as_index=False)["GDP"].mean() if gdp_agg else gdp
     cqs = cqs.groupby("Year", as_index=False)["CQS"].mean()
     kts = kts.groupby("Year", as_index=False)["KTS"].mean()
     xhs = xhs.groupby("Year", as_index=False)["XHS"].mean()
